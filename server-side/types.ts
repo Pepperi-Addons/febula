@@ -1,22 +1,18 @@
 import { AddonData } from "@pepperi-addons/papi-sdk";
-
-export interface FilterBy {
-    Field: string;
-    FilterObject: string;
-}
+import { Fields } from "@pepperi-addons/papi-sdk/dist/endpoints";
 
 export interface FilterObject extends AddonData {
-    Name: string;
-    FromResource?: string;
-    Field: string;
-    FilterBy?: FilterBy;
-    Terminal?: boolean;
     Key?: string;
+    Name: string;
+    Resource?: string;
+    Field: string;
+    PreviousField?: string;
+    PreviousFilter?: string;
 }
 
 export interface FilterRule extends AddonData {
+    Key?: string;
     Profile: string;
     Resource: string;
-    FilterObject: string;
-    Key?: string;
+    Filter: string;
 }

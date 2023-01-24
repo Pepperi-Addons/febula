@@ -19,7 +19,6 @@ export async function filter_rule(client: Client, request: Request) {
             }
             const filterRule: FilterRule = request.body.FilterRule;
             const result = await filterRuleService.upsert(filterRule);
-            return result;
         }
 
         else {
@@ -48,7 +47,6 @@ export async function filter_object(client: Client, request: Request) {
             }
             const filterObject: FilterObject = request.body.FilterObject;
             const result = await filterObjectService.upsert(filterObject);
-            return result;
         }
 
         else {

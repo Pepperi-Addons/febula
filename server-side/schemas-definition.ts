@@ -1,4 +1,5 @@
 import { AddonDataScheme } from "@pepperi-addons/papi-sdk";
+import { AddonUUID } from "../addon.config.json"
 
 export const filterObjectSchemaName = 'filterObjects';
 export const filterObjectSchema: AddonDataScheme = {
@@ -6,17 +7,15 @@ export const filterObjectSchema: AddonDataScheme = {
     Type: 'data',
     Fields: {
         Name: { Type: 'String' }, // This is the name of the filter object
-        FromResource: { Type: 'String' }, // This is the name of the resource we are filtering
+        Resource: { Type: 'String' }, // This is the name of the resource we are filtering
         Field: { Type: 'String' }, // This is the name of the field we wish to acquire from the resource
-        FilterBy: { // This is the filter object
-            Type: 'Object',
-            Fields: {
-                Field: { Type: 'String' }, // This is the name of the field we wish to filter by
-                FilterObject: { Type: 'String' } // This is the name of the filter object we wish to filter by
-            }
-        },
-        Terminal: { Type: 'Bool' } // This is a flag to indicate if this is a terminal filter object (i.e. we have reached the end of the filter chain)
-    }
+        PreviousField: { Type: 'String' }, // This is the name of the field we wish to filter by
+        PreviousFilter: {
+            Type: "Resource",
+            AddonUUID: AddonUUID,
+            Resource: filterObjectSchemaName
+        } // This is the key of the filter object we wish to filter by
+    },
 }
 
 export const filterRuleSchemaName = 'filterRules';
@@ -26,6 +25,10 @@ export const filterRuleSchema: AddonDataScheme = {
     Fields: {
         Profile: { Type: 'String' }, // This is the name of the profile this rule belongs to
         Resource: { Type: 'String' }, // This is the name of the resource we are filtering
-        FilterObject: { Type: 'String' } // This is the name of the filter object we wish to filter by for this resource and profile.
+        Filter: {
+            Type: "Resource",
+            AddonUUID: AddonUUID,
+            Resource: filterObjectSchemaName
+        } // This is the key of the filter object we wish to filter by for this resource and profile.
     }
 }
