@@ -51,7 +51,7 @@ export const filterRuleSchema: AddonDataScheme = {
     Name: filterRuleSchemaName,
     Type: 'data',
     Fields: {
-        Profile: { Type: 'String' }, // This is the name of the profile this rule belongs to
+        EmployeeType: { Type: 'Integer' }, // This is the type of the profile this rule belongs to. 1 = Admin, 2 = Rep, 3 = Buyer
         Resource: { Type: 'String' }, // This is the name of the resource we are filtering
         Filter: {
             Type: "Resource",
@@ -66,8 +66,10 @@ export const filterRuleJsonschema = {
         "Key": {
             "type": "string"
         },
-        "Profile": {
-            "type": "string"
+        "EmployeeType": { // only 1, 2 or 3
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
         },
         "Resource": {
             "type": "string"
@@ -77,7 +79,7 @@ export const filterRuleJsonschema = {
         }
     },
     "required": [
-        "Profile",
+        "EmployeeType",
         "Resource",
         "Filter"
     ]

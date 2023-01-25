@@ -12,7 +12,7 @@ export interface FilterObject extends AddonData {
 
 export interface FilterRule extends AddonData {
     Key?: string;
-    Profile: string;
+    EmployeeType: 1|2|3; // 1 = Admin, 2 = Rep, 3 = Buyer
     Resource: string;
     Filter: string;
 }
