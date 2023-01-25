@@ -4,7 +4,7 @@ import { AddonUUID } from "../addon.config.json"
 export const filterObjectSchemaName = 'filterObjects';
 export const filterObjectSchema: AddonDataScheme = {
     Name: filterObjectSchemaName,
-    Type: 'data',
+    Type: 'meta_data',
     Fields: {
         Name: { Type: 'String' }, // This is the name of the filter object
         Resource: { Type: 'String' }, // This is the name of the resource we are filtering
@@ -49,7 +49,7 @@ export const filterObjectJsonschema = {
 export const filterRuleSchemaName = 'filterRules';
 export const filterRuleSchema: AddonDataScheme = {
     Name: filterRuleSchemaName,
-    Type: 'data',
+    Type: 'meta_data',
     Fields: {
         EmployeeType: { Type: 'Integer' }, // This is the type of the profile this rule belongs to. 1 = Admin, 2 = Rep, 3 = Buyer
         Resource: { Type: 'String' }, // This is the name of the resource we are filtering

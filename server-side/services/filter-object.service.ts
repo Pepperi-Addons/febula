@@ -10,8 +10,8 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
     schema: AddonDataScheme;
     jsonSchemaToValidate: any;
 
-    constructor(client: Client) {
-        super(client);
+    constructor(client: Client, ownerUUID?: string, secretKey?: string) {
+        super(client, ownerUUID, secretKey);
         this.schemaName = filterObjectSchemaName;
         this.schema = filterObjectSchema;
         this.jsonSchemaToValidate = filterObjectJsonschema;

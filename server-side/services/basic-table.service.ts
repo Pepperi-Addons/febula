@@ -9,7 +9,7 @@ export abstract class BasicTableService<T extends AddonData>{
     abstract schema: AddonDataScheme;
     abstract jsonSchemaToValidate: any;
 
-    constructor(protected client: Client) {
+    constructor(protected client: Client, protected ownerUUID?: string, protected secretKey?: string) {
         this.papiClient = new PapiClient({
             baseURL: client.BaseURL,
             token: client.OAuthAccessToken,
@@ -19,13 +19,47 @@ export abstract class BasicTableService<T extends AddonData>{
         });
     }
 
+    getOwnerPapiClient(): PapiClient {
+        return new PapiClient({
+            baseURL: this.client.BaseURL,
+            token: this.client.OAuthAccessToken,
+            addonUUID: this.ownerUUID,
+            addonSecretKey: this.secretKey,
+            actionUUID: this.client.ActionUUID
+        });
+    }
+
+    async validateOwner() {
+        try {
+            const papiClient = this.getOwnerPapiClient();
+            await papiClient.apiCall('GET', `/var/sk/addons/${this.ownerUUID}/validate`);
+        }
+        catch (err) {
+            console.error('got error: ', JSON.stringify(err));
+            throw new Error('SecretKey must match with OwnerUUID')
+        }
+    }
+
     async createSchema(): Promise<any> {
-        return await this.papiClient.addons.data.schemes.post(this.schema);
+        try {
+            return await this.papiClient.addons.data.schemes.post(this.schema);
+        }
+        catch (ex) {
+            console.error(`Failed to create schema ${this.schemaName} with error: ${JSON.stringify(ex)}`);
+            throw ex;
+        }
     }
 
     // upsert data to table
     private async postData(addonData: T): Promise<any> {
-        return await this.papiClient.addons.data.uuid(this.client.AddonUUID).table(this.schemaName).upsert(addonData);
+        try {
+            const papiClient = this.getOwnerPapiClient();
+            return await papiClient.addons.data.uuid(this.client.AddonUUID).table(this.schemaName).upsert(addonData);
+        }
+        catch (ex) {
+            console.error(`Failed to upsert data to ${this.schemaName} table with error: ${JSON.stringify(ex)}`);
+            throw ex;
+        }
     }
 
     // validlate schema
@@ -48,12 +82,19 @@ export abstract class BasicTableService<T extends AddonData>{
         if (!addonData.Key) {
             addonData.Key = uuid();
         }
+        try {
+            if (!(await this.validateData(addonData))) {
+                throw new Error(`Validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}`);
+            }
 
-        if (!this.validateData(addonData)) {
-            throw new Error(`Validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}`);
+            await this.validateOwner();
+
+            return await this.postData(addonData);
         }
-
-        return await this.postData(addonData);
+        catch (ex) {
+            console.error(`Failed to upsert data to ${this.schemaName} table with error: ${JSON.stringify(ex)}`);
+            throw new Error((ex as { message: string }).message);
+        }
     }
 
     async get(options?: FindOptions): Promise<T[]> {

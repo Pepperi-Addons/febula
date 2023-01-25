@@ -9,8 +9,8 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
     schema: AddonDataScheme;
     jsonSchemaToValidate: any;
 
-    constructor(client: Client) {
-        super(client);
+    constructor(client: Client, ownerUUID?: string, secretKey?: string) {
+        super(client, ownerUUID, secretKey);
         this.schemaName = filterRuleSchemaName;
         this.schema = filterRuleSchema;
         this.jsonSchemaToValidate = filterRuleSchema;
