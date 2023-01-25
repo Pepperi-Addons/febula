@@ -1,5 +1,5 @@
 import { Client } from "@pepperi-addons/debug-server/dist";
-import { AddonData, PapiClient, AddonDataScheme } from "@pepperi-addons/papi-sdk";
+import { AddonData, PapiClient, AddonDataScheme, FindOptions } from "@pepperi-addons/papi-sdk";
 import { uuid } from "uuidv4";
 
 export abstract class BasicTableService<T extends AddonData>{
@@ -42,7 +42,7 @@ export abstract class BasicTableService<T extends AddonData>{
         return await this.postData(addonData);
     }
 
-    async getAll(): Promise<T[]> {
-        return (await this.papiClient.addons.data.uuid(this.client.AddonUUID).table(this.schemaName).find({ page_size: -1 })) as T[];
+    async get(options?: FindOptions): Promise<T[]> {
+        return (await this.papiClient.addons.data.uuid(this.client.AddonUUID).table(this.schemaName).find(options)) as T[];
     }
 }

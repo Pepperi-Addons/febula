@@ -1,4 +1,5 @@
 import { Client, Request } from '@pepperi-addons/debug-server'
+import { FindOptions } from '@pepperi-addons/papi-sdk';
 import { FilterObjectService } from './services/filter-object.service';
 import { FilterRuleService } from './services/filter-rule.service';
 import { FilterObject, FilterRule } from './types';
@@ -8,17 +9,16 @@ export async function filter_rule(client: Client, request: Request) {
     try {
         // if this is GET request, return filter rules
         if (request.method === 'GET') {
-            const result = await filterRuleService.getAll();
+            const options: FindOptions = request.body;
+            const result = await filterRuleService.get(options);
             return result;
         }
 
         // if this is POST request, upsert filter rule
         else if (request.method === 'POST') {
-            if (!request.body.FilterRule) {
-                throw new Error('Missing FilterRule in request body');
-            }
-            const filterRule: FilterRule = request.body.FilterRule;
+            const filterRule = request.body as FilterRule;
             const result = await filterRuleService.upsert(filterRule);
+            return result;
         }
 
         else {
@@ -36,17 +36,16 @@ export async function filter_object(client: Client, request: Request) {
     try {
         // if this is GET request, return filter objects
         if (request.method === 'GET') {
-            const result = await filterObjectService.getAll();
+            const options: FindOptions = request.body;
+            const result = await filterObjectService.get(options);
             return result;
         }
 
         // if this is POST request, upsert filter object
         else if (request.method === 'POST') {
-            if (!request.body.FilterObject) {
-                throw new Error('Missing FilterObject in request body');
-            }
-            const filterObject: FilterObject = request.body.FilterObject;
+            const filterObject: FilterObject = request.body as FilterObject;
             const result = await filterObjectService.upsert(filterObject);
+            return result;
         }
 
         else {
