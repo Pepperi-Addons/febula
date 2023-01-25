@@ -17,6 +17,34 @@ export const filterObjectSchema: AddonDataScheme = {
         } // This is the key of the filter object we wish to filter by
     },
 }
+export const filterObjectJsonschema = {
+    "type": "object",
+    "properties": {
+        "Key": {
+            "type": "string"
+        },
+        "Name": {
+            "type": "string"
+        },
+        "Resource": {
+            "type": "string"
+        },
+        "Field": {
+            "type": "string"
+        },
+        "PreviousField": {
+            "type": "string"
+        },
+        "PreviousFilter": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "Name",
+        "Resource",
+        "Field"
+    ]
+}
 
 export const filterRuleSchemaName = 'filterRules';
 export const filterRuleSchema: AddonDataScheme = {
@@ -31,4 +59,26 @@ export const filterRuleSchema: AddonDataScheme = {
             Resource: filterObjectSchemaName
         } // This is the key of the filter object we wish to filter by for this resource and profile.
     }
+}
+export const filterRuleJsonschema = {
+    "type": "object",
+    "properties": {
+        "Key": {
+            "type": "string"
+        },
+        "Profile": {
+            "type": "string"
+        },
+        "Resource": {
+            "type": "string"
+        },
+        "Filter": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "Profile",
+        "Resource",
+        "Filter"
+    ]
 }

@@ -1,13 +1,15 @@
 import { Client } from "@pepperi-addons/debug-server/dist";
 import { AddonData, PapiClient, AddonDataScheme, FindOptions } from "@pepperi-addons/papi-sdk";
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
+import { Validator } from "jsonschema";
 
 export abstract class BasicTableService<T extends AddonData>{
     papiClient: PapiClient;
     abstract schemaName: string;
     abstract schema: AddonDataScheme;
+    abstract jsonSchemaToValidate: any;
 
-    constructor(private client: Client) {
+    constructor(protected client: Client) {
         this.papiClient = new PapiClient({
             baseURL: client.BaseURL,
             token: client.OAuthAccessToken,
@@ -26,8 +28,20 @@ export abstract class BasicTableService<T extends AddonData>{
         return await this.papiClient.addons.data.uuid(this.client.AddonUUID).table(this.schemaName).upsert(addonData);
     }
 
+    // validlate schema
+    validateSchema(addonData: T): boolean {
+        const v = new Validator();
+        const result = v.validate(addonData, this.jsonSchemaToValidate);
+        if (!result.valid) {
+            console.warn(`Scheme validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\n${result.errors}`);
+            return false;
+        }
+        return true;
+    }
+
+
     // validate data
-    abstract validateData(addonData: T): boolean;
+    abstract validateData(addonData: T): Promise<boolean>;
 
     // upsert filter object after validation and add key if missing
     async upsert(addonData: T): Promise<any> {
