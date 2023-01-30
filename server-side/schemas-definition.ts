@@ -43,7 +43,11 @@ export const filterObjectJsonschema = {
         "Name",
         "Resource",
         "Field"
-    ]
+    ],
+    "dependencies": {
+        "PreviousField": ["PreviousFilter"],
+        "PreviousFilter": ["PreviousField"]
+    }
 }
 
 export const filterRuleSchemaName = 'filterRules';

@@ -63,41 +63,50 @@ export abstract class BasicTableService<T extends AddonData>{
     }
 
     // validlate schema
-    validateSchema(addonData: T): boolean {
+    validateSchema(addonData: T): void {
         const v = new Validator();
         const result = v.validate(addonData, this.jsonSchemaToValidate);
         if (!result.valid) {
-            console.warn(`Scheme validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\n${result.errors}`);
-            return false;
+            throw new Error(`Scheme validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\n${result.errors}`);
+
         }
-        return true;
     }
 
 
     // validate data
-    abstract validateData(addonData: T): Promise<boolean>;
+    abstract validateData(addonData: T): Promise<void>;
 
     // upsert filter object after validation and add key if missing
     async upsert(addonData: T): Promise<any> {
         if (!addonData.Key) {
             addonData.Key = uuid();
         }
+
+        await this.validateData(addonData);
+        await this.validateOwner();
+
         try {
-            if (!(await this.validateData(addonData))) {
-                throw new Error(`Validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}`);
-            }
-
-            await this.validateOwner();
-
             return await this.postData(addonData);
         }
         catch (ex) {
             console.error(`Failed to upsert data to ${this.schemaName} table with error: ${JSON.stringify(ex)}`);
-            throw new Error((ex as { message: string }).message);
+            throw ex;
         }
     }
 
     async get(options?: FindOptions): Promise<T[]> {
         return (await this.papiClient.addons.data.uuid(this.client.AddonUUID).table(this.schemaName).find(options)) as T[];
+    }
+
+    async getByKey(key: string): Promise<T> {
+        return (await this.papiClient.addons.data.uuid(this.client.AddonUUID).table(this.schemaName).key(key).get()) as T;
+    }
+
+    async delete(key: string): Promise<any> {
+        const hiddenObject = {
+            Key: key,
+            Hidden: true
+        }
+        return await this.postData(hiddenObject as T);
     }
 }

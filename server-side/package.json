@@ -30,7 +30,12 @@
     "dependencies": {
         "@pepperi-addons/debug-server": "*",
         "@pepperi-addons/papi-sdk": "*",
+        "@types/mocha": "^10.0.1",
+        "bluebird": "^3.7.2",
+        "chai": "^4.3.7",
+        "chai-as-promised": "^7.1.1",
         "jsonschema": "^1.4.1",
+        "mocha": "^10.2.0",
         "uuid": "^9.0.0"
     }
 }

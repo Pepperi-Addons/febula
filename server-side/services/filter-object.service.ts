@@ -17,38 +17,28 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
         this.jsonSchemaToValidate = filterObjectJsonschema;
     }
 
-    async validateReferencedKey(addonData: FilterObject): Promise<boolean> {
+    async validateReferencedKey(addonData: FilterObject): Promise<void> {
         // validate that referenced key exist
         if (addonData.PreviousFilter) {
             const referencedFilterObjectKey = addonData.PreviousFilter;
             try {
-                const referencedFilterObject = await this.papiClient.addons.data.uuid(this.client.AddonUUID).table(this.schemaName).key(referencedFilterObjectKey).get();
+                const referencedFilterObject = await this.getByKey(referencedFilterObjectKey);
                 if (!referencedFilterObject) {
-                    console.warn(`Reference validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nKey: ${referencedFilterObjectKey} not found.`);
-                    return false;
+                    throw new Error(`Reference validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nKey: ${referencedFilterObjectKey} not found.`);
                 }
             }
             catch (ex) {
-                console.warn(`Reference validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nKey: ${referencedFilterObjectKey} not found.`);
-                return false;
-            }
+                throw new Error(`Reference validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nKey: ${referencedFilterObjectKey} not found.`);
+            
+           }
         }
-        return true;
     }
 
-    async validateData(addonData: FilterObject): Promise<boolean> {
+    async validateData(addonData: FilterObject): Promise<void> {
         // validate schema
-        const schemaValidationResult = await this.validateSchema(addonData);
-        if (!schemaValidationResult) {
-            return false;
-        }
+        await this.validateSchema(addonData);
 
         // validate referenced key
-        const referencedKeyValidationResult = await this.validateReferencedKey(addonData);
-        if (!referencedKeyValidationResult) {
-            return false;
-        }
-
-        return true;
+        await this.validateReferencedKey(addonData);
     }
 }

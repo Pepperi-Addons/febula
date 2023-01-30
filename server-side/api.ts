@@ -4,7 +4,7 @@ import { FilterObjectService } from './services/filter-object.service';
 import { FilterRuleService } from './services/filter-rule.service';
 import { FilterObject, FilterRule } from './types';
 
-export async function filter_rule(client: Client, request: Request) {
+export async function profile_filters(client: Client, request: Request) {
     const filterRuleService = new FilterRuleService(client, request.header['x-pepperi-ownerid'], request.header['x-pepperi-secretkey']);
     try {
         // if this is GET request, return filter rules
@@ -31,7 +31,7 @@ export async function filter_rule(client: Client, request: Request) {
     }
 }
 
-export async function filter_object(client: Client, request: Request) {
+export async function filters(client: Client, request: Request) {
     const filterObjectService = new FilterObjectService(client, request.header['x-pepperi-ownerid'], request.header['x-pepperi-secretkey']);
     try {
         // if this is GET request, return filter objects

@@ -1,55 +1,46 @@
 import { Client } from "@pepperi-addons/debug-server/dist";
 import { AddonDataScheme } from "@pepperi-addons/papi-sdk";
-import { filterObjectSchemaName, filterRuleSchema, filterRuleSchemaName } from "../schemas-definition";
+import { filterRuleJsonschema, filterRuleSchema, filterRuleSchemaName } from "../schemas-definition";
 import { FilterRule } from "../types";
 import { BasicTableService } from "./basic-table.service";
+import { FilterObjectService } from "./filter-object.service";
 
 export class FilterRuleService extends BasicTableService<FilterRule>{
     schemaName: string;
     schema: AddonDataScheme;
     jsonSchemaToValidate: any;
+    filterObjectService: FilterObjectService;
 
     constructor(client: Client, ownerUUID?: string, secretKey?: string) {
         super(client, ownerUUID, secretKey);
         this.schemaName = filterRuleSchemaName;
         this.schema = filterRuleSchema;
-        this.jsonSchemaToValidate = filterRuleSchema;
+        this.jsonSchemaToValidate = filterRuleJsonschema;
+        this.filterObjectService = new FilterObjectService(client, ownerUUID, secretKey);
     }
 
-    async validateReferencedKey(addonData: FilterRule): Promise<boolean> {
+    async validateReferencedKey(addonData: FilterRule): Promise<void> {
         // validate that referenced key exist
-        const filterObjectResourceName = filterObjectSchemaName;
         if (addonData.Filter) {
             const referencedFilterObjectKey = addonData.Filter;
             try {
-                const referencedFilterObject = await this.papiClient.addons.data.uuid(this.client.AddonUUID).table(filterObjectResourceName).key(referencedFilterObjectKey).get();
+                const referencedFilterObject = await this.filterObjectService.getByKey(referencedFilterObjectKey);
                 if (!referencedFilterObject) {
-                    console.warn(`Reference validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nKey: ${referencedFilterObjectKey} not found.`);
-                    return false;
+                    throw new Error(`Reference validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nKey: ${referencedFilterObjectKey} not found.`);
                 }
             }
             catch (ex) {
-                console.warn(`Reference validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nKey: ${referencedFilterObjectKey} not found.`);
-                return false;
+                throw new Error(`Reference validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nKey: ${referencedFilterObjectKey} not found.`);
             }
         }
-        return true;
     }
 
-    async validateData(addonData: FilterRule): Promise<boolean> {
+    async validateData(addonData: FilterRule): Promise<void> {
         // validate schema
-        const schemaValidationResult = await this.validateSchema(addonData);
-        if (!schemaValidationResult) {
-            return false;
-        }
+        await this.validateSchema(addonData);
 
         // validate referenced key
-        const referencedKeyValidationResult = await this.validateReferencedKey(addonData);
-        if (!referencedKeyValidationResult) {
-            return false;
-        }
-
-        return true;
+        await this.validateReferencedKey(addonData);
     }
 
 }
