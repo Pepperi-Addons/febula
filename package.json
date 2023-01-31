@@ -1,19 +1,28 @@
 {
-	"name": "typescript",
-	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
-		"build": "cd ./client-side && npm run build && cd .. && cd ./server-side && npm run build && cd ..",
-		"init": "cd ./client-side && npm install --force && cd .. && cd ./server-side && npm install --force && cd ..",
-		"publish-addon": "npm run build && publish-addon",
-		"cpi-publish-addon": "cd ./cpi-side && npm run build:debug && cd .. && cpi-node-debug"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
-	"dependencies": {
-		"@pepperi-addons/scripts": "*"
-	}
+  "name": "typescript",
+  "version": "1.0.0",
+  "description": "A template for creating a pepperi addon with an angular app for the client-side & a typescript nodejs app for the server-side",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cd ./client-side && npm run build && cd .. && cd ./server-side && npm run build && cd ..",
+    "init": "cd ./client-side && npm install --force && cd .. && cd ./server-side && npm install --force && cd ..",
+    "publish-addon": "npm run build && publish-addon",
+    "cpi-publish-addon": "cd ./cpi-side && npm run build:debug && cd .. && cpi-node-debug"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@pepperi-addons/scripts": "*"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pepperi-Addons/data-system-filter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Pepperi-Addons/data-system-filter/issues"
+  },
+  "homepage": "https://github.com/Pepperi-Addons/data-system-filter#readme"
 }
