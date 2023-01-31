@@ -16,10 +16,10 @@ import { RelationsService } from './services/relations.service';
 export async function install(client: Client, request: Request): Promise<any> {
     try {
         const relationService = new RelationsService(client);
-        const filterOBjectService = new FilterObjectService(client);
+        const filterObjectService = new FilterObjectService(client);
         const filterRuleService = new FilterRuleService(client);
 
-        await filterOBjectService.createSchema();
+        await filterObjectService.createSchema();
         await filterRuleService.createSchema();
         await relationService.upsertRelations();
     } catch (err) {
