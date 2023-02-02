@@ -9,7 +9,7 @@ export async function profile_filters(client: Client, request: Request) {
     try {
         // if this is GET request, return filter rules
         if (request.method === 'GET') {
-            const options: FindOptions = request.body;
+            const options: FindOptions = request.query;
             const result = await filterRuleService.get(options);
             return result;
         }
@@ -36,7 +36,7 @@ export async function filters(client: Client, request: Request) {
     try {
         // if this is GET request, return filter objects
         if (request.method === 'GET') {
-            const options: FindOptions = request.body;
+            const options: FindOptions = request.query;
             const result = await filterObjectService.get(options);
             return result;
         }
