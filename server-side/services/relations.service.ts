@@ -80,11 +80,11 @@ export class RelationsService {
 
     async upsertRelations() {
         // For settings block use this.
-        // const blockRelationSlugName = 'CHANGE_TO_SETTINGS_SLUG_NAME';
-        // const blockRelationGroupName = 'CHANGE_TO_SETTINGS_GROUP_NAME';
-        // const blockRelationName = 'CHANGE_TO_SETTINGS_RELATION_NAME';
-        // const blockRelationDescription = 'CHANGE_TO_SETTINGS_DESCRIPTION';
-        // await this.upsertSettingsRelation(blockRelationSlugName, blockRelationGroupName, blockRelationName, blockRelationDescription);
+        const blockRelationSlugName = 'CHANGE_TO_SETTINGS_SLUG_NAME';
+        const blockRelationGroupName = 'CHANGE_TO_SETTINGS_GROUP_NAME';
+        const blockRelationName = 'CHANGE_TO_SETTINGS_RELATION_NAME';
+        const blockRelationDescription = 'CHANGE_TO_SETTINGS_DESCRIPTION';
+        await this.upsertSettingsRelation(blockRelationSlugName, blockRelationGroupName, blockRelationName, blockRelationDescription);
 
         // For page block use this.
         // // TODO: change to block name (this is the unique relation name and the description that will be on the block).

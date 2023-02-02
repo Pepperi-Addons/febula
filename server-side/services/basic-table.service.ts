@@ -9,7 +9,7 @@ export abstract class BasicTableService<T extends AddonData>{
     abstract schema: AddonDataScheme;
     abstract jsonSchemaToValidate: any;
 
-    constructor(protected client: Client, protected ownerUUID?: string, protected secretKey?: string) {
+    constructor(protected client: Client, protected ownerUUID: string = client.AddonUUID, protected secretKey: string = client.AddonSecretKey!) {
         this.papiClient = new PapiClient({
             baseURL: client.BaseURL,
             token: client.OAuthAccessToken,
@@ -19,19 +19,19 @@ export abstract class BasicTableService<T extends AddonData>{
         });
     }
 
-    getOwnerPapiClient(): PapiClient {
+    getOwnerPapiClient(passSecretKey: boolean = false): PapiClient {
         return new PapiClient({
             baseURL: this.client.BaseURL,
             token: this.client.OAuthAccessToken,
             addonUUID: this.ownerUUID,
-            addonSecretKey: this.secretKey,
+            addonSecretKey: passSecretKey ? this.secretKey : this.client.AddonSecretKey,
             actionUUID: this.client.ActionUUID
         });
     }
 
     async validateOwner() {
         try {
-            const papiClient = this.getOwnerPapiClient();
+            const papiClient = this.getOwnerPapiClient(true);
             await papiClient.apiCall('GET', `/var/sk/addons/${this.ownerUUID}/validate`);
         }
         catch (err) {

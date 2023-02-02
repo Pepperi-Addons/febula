@@ -30,9 +30,9 @@ export class EditorListComponent implements OnInit {
     }
 
     openDialog() {
-        
+
     }
-    
+
     listDataSource: IPepGenericListDataSource = {
         init: async (state) => {
             return {
@@ -41,10 +41,10 @@ export class EditorListComponent implements OnInit {
                         Name: '',
                         Profile: { InternalID: 0 },
                         ScreenSize: 'Landscape'
-                      },
-                      Type: 'Grid',
-                      Title: '',
-                      Fields: [
+                    },
+                    Type: 'Grid',
+                    Title: '',
+                    Fields: [
                         {
                             FieldID: 'Field1',
                             Type: 'TextBox',
@@ -59,18 +59,20 @@ export class EditorListComponent implements OnInit {
                             Mandatory: false,
                             ReadOnly: true
                         }
-                      ],
-                      Columns: [
+                    ],
+                    Columns: [
                         {
-                          Width: 25
+                            Width: 25
                         },
                         {
-                          Width: 25
+                            Width: 25
                         }
-                      ],
-                      FrozenColumnsCount: 0,
-                      MinimumColumnWidth: 0
-                    }, items: [{
+                    ],
+                    FrozenColumnsCount: 0,
+                    MinimumColumnWidth: 0
+                },
+                items: [
+                    {
                         Key: 'key1',
                         Field1: 'Hello',
                         Field2: true
@@ -79,11 +81,12 @@ export class EditorListComponent implements OnInit {
                         Key: 'key1',
                         Field1: 'World',
                         Field2: false
-                    }], totalCount: 2
-                
+                    }
+                ],
+                totalCount: 2
             }
         }
-        
+
     }
 
     actions: IPepGenericListActions = {
