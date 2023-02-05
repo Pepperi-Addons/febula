@@ -3,7 +3,7 @@ import Mocha, { MochaReporter } from './mocha';
 import { expect } from 'chai';
 import { Promise } from "bluebird";
 import { config as dotenv } from 'dotenv'
-import { FilterObject, FilterRule } from './types';
+import { FilterObject, FilterRule } from '../types';
 dotenv();
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';

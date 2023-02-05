@@ -1,5 +1,5 @@
 import { Client } from "@pepperi-addons/debug-server/dist";
-import { FilterRule } from "../../types";
+import { FilterRule } from "../../../types";
 import { BasicTableTestService } from "./basic-table-test.service";
 import { FilterObjectTestService } from "./filter-object-test.service";
 

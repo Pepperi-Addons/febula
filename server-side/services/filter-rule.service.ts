@@ -1,7 +1,7 @@
 import { Client } from "@pepperi-addons/debug-server/dist";
 import { AddonDataScheme } from "@pepperi-addons/papi-sdk";
 import { filterRuleJsonschema, filterRuleSchema, filterRuleSchemaName } from "../schemas-definition";
-import { FilterRule } from "../types";
+import { FilterRule } from "../../types";
 import { BasicTableService } from "./basic-table.service";
 import { FilterObjectService } from "./filter-object.service";
 
