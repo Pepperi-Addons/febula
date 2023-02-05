@@ -10,11 +10,11 @@ import { FomoService } from "src/services/fomo.service";
 import { FilterObject } from "../../../../../types";
 
 @Component({
-    selector: 'editor-list',
-    templateUrl: './editor-list.component.html',
-    styleUrls: ['./editor-list.component.scss']
+    selector: 'filters-list',
+    templateUrl: './filters-list.component.html',
+    styleUrls: ['./filters-list.component.scss']
 })
-export class EditorListComponent implements OnInit {
+export class FiltersListComponent implements OnInit {
     screenSize: PepScreenSizeType;
     fomoService: FomoService;
 

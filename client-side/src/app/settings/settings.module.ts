@@ -9,7 +9,7 @@ import { SettingsRoutingModule } from './settings.routes';
 import { SettingsComponent } from './settings.component';
 
 import { EditorFormModule } from './editor-form/editor-form.module';
-import { EditorListModule } from './editor-list/editor-list.module';
+import { FiltersListModule } from './filters-list/filters-list.module';
 
 import { config } from '../app.config';
 
@@ -20,13 +20,13 @@ import { config } from '../app.config';
     imports: [
         CommonModule,
         PepNgxLibModule,
-        EditorListModule,
+        FiltersListModule,
         EditorFormModule,
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,
-                useFactory: (addonService: PepAddonService) => 
-                    PepAddonService.createMultiTranslateLoader(config.AddonUUID , addonService, ['ngx-lib', 'ngx-composite-lib']),
+                useFactory: (addonService: PepAddonService) =>
+                    PepAddonService.createMultiTranslateLoader(config.AddonUUID, addonService, ['ngx-lib', 'ngx-composite-lib']),
                 deps: [PepAddonService]
             }
         }),

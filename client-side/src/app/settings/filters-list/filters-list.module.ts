@@ -17,7 +17,7 @@ import { PepIconRegistry, PepIconModule, pepIconSystemClose } from '@pepperi-add
 
 import { PepGenericListModule } from '@pepperi-addons/ngx-composite-lib/generic-list';
 
-import { EditorListComponent } from './editor-list.component';
+import { FiltersListComponent } from './filters-list.component';
 
 const pepIcons = [
     pepIconSystemClose,
@@ -26,13 +26,13 @@ const pepIcons = [
 export const routes: Routes = [
     {
         path: '',
-        component: EditorListComponent
+        component: FiltersListComponent
     }
 ];
 
 @NgModule({
     declarations: [
-        EditorListComponent
+        FiltersListComponent
     ],
     imports: [
         CommonModule,
@@ -50,9 +50,9 @@ export const routes: Routes = [
         TranslateModule.forChild(),
         RouterModule.forChild(routes)
     ],
-    exports:[EditorListComponent]
+    exports: [FiltersListComponent]
 })
-export class EditorListModule {
+export class FiltersListModule {
     constructor(
         private pepIconRegistry: PepIconRegistry,
     ) {

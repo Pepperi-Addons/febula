@@ -13,7 +13,7 @@ const routes: Routes = [
             },
             {
                 path: '**',
-                loadChildren: () => import('./editor-list/editor-list.module').then(m => m.EditorListModule),
+                loadChildren: () => import('./filters-list/filters-list.module').then(m => m.FiltersListModule),
             }
         ]
     }
