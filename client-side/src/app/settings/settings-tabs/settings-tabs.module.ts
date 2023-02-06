@@ -10,6 +10,7 @@ import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 import { PepSizeDetectorModule } from '@pepperi-addons/ngx-lib/size-detector';
 import { PepPageLayoutModule } from '@pepperi-addons/ngx-lib/page-layout';
 import { PepIconRegistry, PepIconModule, pepIconSystemClose } from '@pepperi-addons/ngx-lib/icon';
+import { MatTabsModule } from '@angular/material/tabs';
 // import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
 // import { PepDialogModule } from '@pepperi-addons/ngx-lib/dialog';
 // import { PepMenuModule } from '@pepperi-addons/ngx-lib/menu';
@@ -17,7 +18,8 @@ import { PepIconRegistry, PepIconModule, pepIconSystemClose } from '@pepperi-add
 
 import { PepGenericListModule } from '@pepperi-addons/ngx-composite-lib/generic-list';
 
-import { EditorListComponent } from './editor-list.component';
+import { SettingsTabsComponent } from './settings-tabs.component';
+import { FiltersListModule } from "../filters-list/filters-list.module";
 
 const pepIcons = [
     pepIconSystemClose,
@@ -26,14 +28,15 @@ const pepIcons = [
 export const routes: Routes = [
     {
         path: '',
-        component: EditorListComponent
+        component: SettingsTabsComponent
     }
 ];
 
 @NgModule({
     declarations: [
-        EditorListComponent
+        SettingsTabsComponent
     ],
+    exports: [SettingsTabsComponent],
     imports: [
         CommonModule,
         HttpClientModule,
@@ -47,12 +50,13 @@ export const routes: Routes = [
         // PepButtonModule,
         // PepTextboxModule,
         PepGenericListModule,
+        MatTabsModule,
         TranslateModule.forChild(),
-        RouterModule.forChild(routes)
-    ],
-    exports:[EditorListComponent]
+        RouterModule.forChild(routes),
+        FiltersListModule
+    ]
 })
-export class EditorListModule {
+export class SettingsTabsModule {
     constructor(
         private pepIconRegistry: PepIconRegistry,
     ) {

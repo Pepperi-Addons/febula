@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-// import { SettingsComponent } from './settings.component';
 
 const routes: Routes = [
     {
@@ -13,7 +12,8 @@ const routes: Routes = [
             },
             {
                 path: '**',
-                loadChildren: () => import('./editor-list/editor-list.module').then(m => m.EditorListModule),
+                loadChildren: () => import('./settings-tabs/settings-tabs.module').then(m => m.SettingsTabsModule),
+
             }
         ]
     }
