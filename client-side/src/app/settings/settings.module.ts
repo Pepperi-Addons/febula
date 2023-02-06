@@ -11,7 +11,10 @@ import { SettingsComponent } from './settings.component';
 import { EditorFormModule } from './editor-form/editor-form.module';
 import { FiltersListModule } from './filters-list/filters-list.module';
 
+import { MatTabsModule } from '@angular/material/tabs';
+
 import { config } from '../app.config';
+import { SettingsTabsModule } from './settings-tabs/settings-tabs.module';
 
 @NgModule({
     declarations: [
@@ -20,6 +23,7 @@ import { config } from '../app.config';
     imports: [
         CommonModule,
         PepNgxLibModule,
+        MatTabsModule,
         FiltersListModule,
         EditorFormModule,
         TranslateModule.forChild({
@@ -31,6 +35,7 @@ import { config } from '../app.config';
             }
         }),
         SettingsRoutingModule,
+        SettingsTabsModule,
     ],
     providers: [
         TranslateStore,

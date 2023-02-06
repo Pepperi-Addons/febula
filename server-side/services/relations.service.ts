@@ -14,17 +14,17 @@ export class RelationsService {
             addonSecretKey: client.AddonSecretKey,
             actionUUID: client.ActionUUID
         });
-        
+
         this.bundleFileName = `file_${this.client.AddonUUID}`;
     }
-    
+
     // For page block template
     private async upsertRelation(relation): Promise<any> {
         return await this.papiClient.post('/addons/data/relations', relation);
     }
 
     private getCommonRelationProperties(
-        relationName: 'SettingsBlock' | 'PageBlock' | 'AddonBlock', 
+        relationName: 'SettingsBlock' | 'PageBlock' | 'AddonBlock',
         blockRelationName: string,
         blockRelationDescription: string,
         blockName: string
@@ -55,7 +55,7 @@ export class RelationsService {
 
         blockRelation['SlugName'] = blockRelationSlugName;
         blockRelation['GroupName'] = blockRelationGroupName;
-        
+
         return await this.upsertRelation(blockRelation);
     }
 
@@ -74,16 +74,16 @@ export class RelationsService {
             blockRelation['EditorModuleName'] = `${blockName}EditorModule`; // This is should be the block editor module name (from the client-side)}
             blockRelation['EditorElementName'] = `${blockName.toLocaleLowerCase()}-editor-element-${this.client.AddonUUID}`;
         }
-        
+
         return await this.upsertRelation(blockRelation);
     }
 
     async upsertRelations() {
         // For settings block use this.
-        const blockRelationSlugName = 'CHANGE_TO_SETTINGS_SLUG_NAME';
-        const blockRelationGroupName = 'CHANGE_TO_SETTINGS_GROUP_NAME';
-        const blockRelationName = 'CHANGE_TO_SETTINGS_RELATION_NAME';
-        const blockRelationDescription = 'CHANGE_TO_SETTINGS_DESCRIPTION';
+        const blockRelationSlugName = 'FOMO';
+        const blockRelationGroupName = 'Fomo_Group';
+        const blockRelationName = 'FOMO_Relation';
+        const blockRelationDescription = 'Look at this FOMO block';
         await this.upsertSettingsRelation(blockRelationSlugName, blockRelationGroupName, blockRelationName, blockRelationDescription);
 
         // For page block use this.

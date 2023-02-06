@@ -18,16 +18,25 @@ import { MatTabsModule } from '@angular/material/tabs';
 
 import { PepGenericListModule } from '@pepperi-addons/ngx-composite-lib/generic-list';
 
-import { FiltersListComponent } from './filters-list.component';
+import { SettingsTabsComponent } from './settings-tabs.component';
+import { FiltersListModule } from "../filters-list/filters-list.module";
 
 const pepIcons = [
     pepIconSystemClose,
 ];
 
+export const routes: Routes = [
+    {
+        path: '',
+        component: SettingsTabsComponent
+    }
+];
+
 @NgModule({
     declarations: [
-        FiltersListComponent
+        SettingsTabsComponent
     ],
+    exports: [SettingsTabsComponent],
     imports: [
         CommonModule,
         HttpClientModule,
@@ -43,10 +52,11 @@ const pepIcons = [
         PepGenericListModule,
         MatTabsModule,
         TranslateModule.forChild(),
-    ],
-    exports: [FiltersListComponent]
+        RouterModule.forChild(routes),
+        FiltersListModule
+    ]
 })
-export class FiltersListModule {
+export class SettingsTabsModule {
     constructor(
         private pepIconRegistry: PepIconRegistry,
     ) {
