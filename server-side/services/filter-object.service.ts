@@ -1,7 +1,7 @@
 import { Client } from "@pepperi-addons/debug-server/dist";
 import { AddonDataScheme } from "@pepperi-addons/papi-sdk";
 import { filterObjectJsonschema, filterObjectSchema, filterObjectSchemaName } from "../schemas-definition";
-import { FilterObject } from "../../types";
+import { FilterObject } from "../../shared/types";
 import { BasicTableService } from "./basic-table.service";
 
 

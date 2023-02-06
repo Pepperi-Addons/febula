@@ -1,6 +1,6 @@
 import { PepAddonService } from "@pepperi-addons/ngx-lib";
 import { config } from "../app/app.config"
-import { FilterObject, FilterRule } from "../../../types";
+import { FilterObject, FilterRule } from "../../../shared/types";
 
 export class FomoService {
     constructor(private pepAddonService: PepAddonService) {

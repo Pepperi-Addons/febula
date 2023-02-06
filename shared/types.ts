@@ -1,4 +1,4 @@
-import { AddonData } from "./server-side/node_modules/@pepperi-addons/papi-sdk";
+import { AddonData } from "../server-side/node_modules/@pepperi-addons/papi-sdk/dist";
 /**
 * Key?: string; - UUID
 

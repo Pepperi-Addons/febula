@@ -7,7 +7,7 @@ import { PepSelectionData } from '@pepperi-addons/ngx-lib/list';
 
 import { IPepGenericListDataSource, IPepGenericListActions } from "@pepperi-addons/ngx-composite-lib/generic-list";
 import { FomoService } from "src/services/fomo.service";
-import { FilterObject } from "../../../../../types";
+import { FilterObject } from "../../../../../shared/types";
 
 @Component({
     selector: 'filters-list',
