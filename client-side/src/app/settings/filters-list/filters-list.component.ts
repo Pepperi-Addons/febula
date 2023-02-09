@@ -69,11 +69,16 @@ export class FiltersListComponent implements OnInit {
         });
     }
 
+    async updateFilterObjects(searchString: string) {
+        this.filterObjects = await this.fomoService.getFilterObjects(searchString);
+        this.updateFilterObjectsMap(this.filterObjects);
+    }
+
+
     getDataSource() {
         return {
             init: async (state) => {
-                this.filterObjects = await this.fomoService.getFilterObjects(state?.searchString);
-                this.updateFilterObjectsMap(this.filterObjects);
+                await this.updateFilterObjects(state?.searchString);
                 return {
                     dataView: {
                         Context: {
@@ -164,8 +169,7 @@ export class FiltersListComponent implements OnInit {
                     title: this.translate.instant("Delete"),
                     handler: async (data) => {
                         const filterObjectKeys = data?.rows;
-                        const filterObjects = filterObjectKeys.map(key => this.filterObjectsMap.get(key));
-                        await this.fomoService.deleteFilterObjects(filterObjects);
+                        await this.fomoService.deleteFilterObjects(filterObjectKeys);
                         this.listDataSource = this.getDataSource();
                     }
                 }]

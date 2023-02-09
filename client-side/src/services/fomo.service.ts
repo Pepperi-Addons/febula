@@ -55,18 +55,14 @@ export class FomoService {
         }
     }
 
-    async deleteFilterObjects(filterObjects: FilterObject[]): Promise<any> {
-        const hiddenFilterObjects = filterObjects.map(filterObject => {
-            filterObject.Hidden = true;
-            return filterObject;
-        });
-
+    async deleteFilterObjects(filterObjectKeys: string[]): Promise<any> {
         try {
-            return await Promise.map(hiddenFilterObjects, this.upsertFilterObject.bind(this), { concurrency: this.MAX_PARALLEL });
+            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'api', 'filters_delete', { Keys: filterObjectKeys }).toPromise();
+            return postResults;
         }
         catch (ex) {
-            console.error(`Error in deleteFilterObjects: ${ex}`);
-            throw ex;
+            console.error(`Error in upsertFilterObject: ${ex}`);
+            throw ex
         }
 
     }

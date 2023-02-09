@@ -61,7 +61,7 @@ export async function fomo_tests(client: Client, request: Request) {
 
     describe('FOMO Tests', () => {
         const filterObjectService = new FilterObjectTestService(client, debug, client.AddonUUID, client.AddonSecretKey);
-        const filterRuleService = new FilterRuleTestService(client, debug, client.AddonUUID, client.AddonSecretKey);
+        const filterRuleService = new FilterRuleTestService(client, debug, filterObjectService, client.AddonUUID, client.AddonSecretKey);
 
         const cleanup = async () => {
             await filterObjectService.cleanUp();
@@ -103,7 +103,7 @@ export async function fomo_tests(client: Client, request: Request) {
                     filterObject = res2 as FilterObject;
                 });
                 it('delete', async () => {
-                    await filterObjectService.delete(filterObject);
+                    await filterObjectService.delete([filterObject.Key!]);
                     const res2: FilterObject[] = await filterObjectService.get({ where: `Key = '${filterObject.Key}'` })
                     expect(res2).to.be.an('array').to.have.lengthOf(0);
                 });
@@ -192,7 +192,7 @@ export async function fomo_tests(client: Client, request: Request) {
                     filterRule = res2 as FilterRule;
                 });
                 it('delete', async () => {
-                    await filterRuleService.delete(filterRule);
+                    await filterRuleService.delete([filterRule.Key!]);
                     const res2: FilterRule[] = await filterRuleService.get({ where: `Key = '${filterRule.Key}'` })
                     expect(res2).to.be.an('array').to.have.lengthOf(0);
                 });
