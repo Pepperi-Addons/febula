@@ -1,14 +1,19 @@
 import { PepAddonService } from "@pepperi-addons/ngx-lib";
 import { config } from "../app/app.config"
 import { FilterObject, FilterRule } from "../../../shared/types";
+import { Promise } from "bluebird";
 
 export class FomoService {
+
+    MAX_PARALLEL = 10;
+
     constructor(private pepAddonService: PepAddonService) {
     }
 
-    async getFilterObjects(): Promise<FilterObject[]> {
+    async getFilterObjects(searchString?: string): Promise<FilterObject[]> {
         try {
-            const getResults = await this.pepAddonService.getAddonApiCall(config.AddonUUID, 'api', 'filters?page_size=-1').toPromise();
+            const url = 'filters?page_size=-1' + (searchString ? `&where=Name like '%25${searchString}%25'` : '');
+            const getResults = await this.pepAddonService.getAddonApiCall(config.AddonUUID, 'api', url).toPromise();
             return getResults as FilterObject[];
         }
         catch (ex) {
@@ -48,5 +53,17 @@ export class FomoService {
             console.error(`Error in upsertFilterRule: ${ex}`);
             throw ex;
         }
+    }
+
+    async deleteFilterObjects(filterObjectKeys: string[]): Promise<any> {
+        try {
+            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'api', 'filters_delete', { Keys: filterObjectKeys }).toPromise();
+            return postResults;
+        }
+        catch (ex) {
+            console.error(`Error in upsertFilterObject: ${ex}`);
+            throw ex
+        }
+
     }
 }

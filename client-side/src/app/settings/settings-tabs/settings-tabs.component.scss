@@ -1,0 +1,15 @@
+.mat-tab-group {
+    height: inherit;
+
+    ::ng-deep {
+        .mat-tab-body-wrapper {
+            height: inherit;
+        }
+
+        .mat-tab-body-content {
+            padding: 0 !important;
+            margin-top: -0.25rem;
+
+        }
+    }
+}

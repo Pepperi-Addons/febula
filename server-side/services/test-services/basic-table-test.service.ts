@@ -6,7 +6,7 @@ import { Promise } from "bluebird";
 export abstract class BasicTableTestService<T extends AddonData>{
     papiClient: PapiClient;
     abstract functionEndpointSuffix: string;
-    upsertedRecords: T[] = [];
+    upsertedRecordsKeys: string[] = [];
     MAX_PARALLEL = 10;
 
     constructor(protected client: Client, protected debug: boolean, protected ownerUUID: string = client.AddonUUID, protected secretKey: string = client.AddonSecretKey!) {
@@ -29,7 +29,7 @@ export abstract class BasicTableTestService<T extends AddonData>{
     }
 
     private getBaseURL(client): string {
-        return client.isDebug ? 'http://localhost:4500' : `${client.BaseURL}/addons/api/${client.AddonUUID}`;
+        return this.debug ? 'http://localhost:4500' : `${client.BaseURL}/addons/api/${client.AddonUUID}`;
     }
 
     private getOwnerPapiClient(passSecretKey: boolean = false): PapiClient {
@@ -64,10 +64,10 @@ export abstract class BasicTableTestService<T extends AddonData>{
                 ExpirationDateTime: this.getExpirationDateTime()
             }, { 'Content-Type': 'application/json' });
             // if doesn't already exist
-            if (upsertResult && upsertResult.Key && !this.upsertedRecords.find(record => record.Key === upsertResult.Key)) {
-                this.upsertedRecords.push(addonData);
-                return upsertResult;
+            if (upsertResult && upsertResult.Key && !this.upsertedRecordsKeys.includes(upsertResult.Key)) {
+                this.upsertedRecordsKeys.push(upsertResult.Key);
             }
+            return upsertResult;
         }
         catch (ex) {
             console.error(`Failed to upsert data to ${this.functionEndpointSuffix} table with error: ${JSON.stringify(ex)}`);
@@ -85,16 +85,35 @@ export abstract class BasicTableTestService<T extends AddonData>{
         return results.length > 0 ? results[0] : undefined;
     }
 
-    async delete(addonData: T): Promise<any> {
-        return await this.upsert({
-            ...addonData,
-            Hidden: true
-        });
+    private getDeleteURL() {
+        return `${this.functionEndpointSuffix}_delete`;
+    }
+
+    async delete(keys: string[]): Promise<any> {
+        try {
+            const papiClient = this.getOwnerPapiClient();
+            const deleteResult = await papiClient.post(
+                this.getDeleteURL(), {
+                Keys: keys
+            }, { 'Content-Type': 'application/json' });
+            // if doesn't already exist
+            return deleteResult;
+        }
+        catch (ex) {
+            console.error(`Failed to delete data from ${this.functionEndpointSuffix} table with error: ${JSON.stringify(ex)}`);
+            throw ex;
+        }
     }
 
     async cleanUp(): Promise<any> {
-        await Promise.map(this.upsertedRecords, async (record) => {
-            await this.delete(record);
-        }, { concurrency: this.MAX_PARALLEL });
+        try {
+            const results = await this.delete(this.upsertedRecordsKeys);
+            this.upsertedRecordsKeys = [];
+            return results;
+        }
+        catch (ex) {
+            console.error(`Failed to clean up ${this.functionEndpointSuffix} table with error: ${JSON.stringify(ex)}`);
+            throw ex;
+        }
     }
 }

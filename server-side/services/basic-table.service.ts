@@ -2,6 +2,7 @@ import { Client } from "@pepperi-addons/debug-server/dist";
 import { AddonData, PapiClient, AddonDataScheme, FindOptions } from "@pepperi-addons/papi-sdk";
 import { v4 as uuid } from "uuid";
 import { Validator } from "jsonschema";
+import { Promise } from "bluebird";
 
 export abstract class BasicTableService<T extends AddonData>{
     papiClient: PapiClient;
@@ -62,7 +63,7 @@ export abstract class BasicTableService<T extends AddonData>{
         }
     }
 
-    // validlate schema
+    // validate schema
     validateSchema(addonData: T): void {
         const v = new Validator();
         const result = v.validate(addonData, this.jsonSchemaToValidate);
@@ -102,11 +103,25 @@ export abstract class BasicTableService<T extends AddonData>{
         return (await this.papiClient.addons.data.uuid(this.client.AddonUUID).table(this.schemaName).key(key).get()) as T;
     }
 
-    async delete(key: string): Promise<any> {
-        const hiddenObject = {
-            Key: key,
-            Hidden: true
+    async delete(keys: string[]): Promise<any> {
+        const MAX_PARALLEL = 10;
+
+        const hiddenObjects = keys.map(key => {
+            return {
+                Key: key,
+                Hidden: true
+            }
+        });
+
+        try {
+            return await Promise.map(hiddenObjects, async (hiddenObject) => {
+                return await this.postData(hiddenObject);
+            }, { concurrency: MAX_PARALLEL });
         }
-        return await this.postData(hiddenObject as T);
+        catch (ex) {
+            console.error(`Failed to delete data from ${this.schemaName} table with error: ${JSON.stringify(ex)}`);
+            throw ex;
+        }
+
     }
 }

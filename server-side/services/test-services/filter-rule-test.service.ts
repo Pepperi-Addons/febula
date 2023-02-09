@@ -7,10 +7,10 @@ export class FilterRuleTestService extends BasicTableTestService<FilterRule>{
     functionEndpointSuffix: string;
     filterObjectTestService: FilterObjectTestService;
 
-    constructor(client: Client, debug: boolean, ownerUUID?: string, secretKey?: string) {
+    constructor(client: Client, debug: boolean, filterObjectTestService: FilterObjectTestService, ownerUUID?: string, secretKey?: string) {
         super(client, debug, ownerUUID, secretKey);
         this.functionEndpointSuffix = '/api/profile_filters';
-        this.filterObjectTestService = new FilterObjectTestService(client, debug, ownerUUID, secretKey);
+        this.filterObjectTestService = filterObjectTestService;
     }
 
     async createObject(options?: {
