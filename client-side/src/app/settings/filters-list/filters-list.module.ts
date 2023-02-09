@@ -19,6 +19,8 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { PepGenericListModule } from '@pepperi-addons/ngx-composite-lib/generic-list';
 
 import { FiltersListComponent } from './filters-list.component';
+import { PepSearchModule } from '@pepperi-addons/ngx-lib/search';
+import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
 
 const pepIcons = [
     pepIconSystemClose,
@@ -42,6 +44,7 @@ const pepIcons = [
         // PepTextboxModule,
         PepGenericListModule,
         MatTabsModule,
+        PepButtonModule,
         TranslateModule.forChild(),
     ],
     exports: [FiltersListComponent]

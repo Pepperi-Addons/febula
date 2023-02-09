@@ -1,10 +1,8 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, Inject, OnInit } from "@angular/core";
+import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from '@angular/router';
-
 import { TranslateService } from '@ngx-translate/core';
-
 import { PepLayoutService, PepScreenSizeType } from '@pepperi-addons/ngx-lib';
-
 import { PepDialogData, PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 
 @Component({
@@ -15,13 +13,14 @@ import { PepDialogData, PepDialogService } from '@pepperi-addons/ngx-lib/dialog'
 export class EditorFormComponent implements OnInit {
 
     screenSize: PepScreenSizeType;
-
     constructor(
         public layoutService: PepLayoutService,
+        private dialogRef: MatDialogRef<EditorFormComponent>,
         public translate: TranslateService,
         public dialogService: PepDialogService,
         public router: Router,
-        public activatedRoute: ActivatedRoute
+        public activatedRoute: ActivatedRoute,
+        @Inject(MAT_DIALOG_DATA) public incoming: { any: any }
     ) {
 
         this.layoutService.onResize$.subscribe(size => {
@@ -42,14 +41,15 @@ export class EditorFormComponent implements OnInit {
     }
 
     goBack() {
-        this.router.navigate(['..'], {
-            relativeTo: this.activatedRoute,
-            queryParamsHandling: 'preserve'
-        })
+        this.close(undefined);
+    }
+
+    close(event: any) {
+        this.dialogRef.close(event);
     }
 
     backClicked() {
-        this.goBack();
+        this.close(undefined);
     }
 
     saveClicked() {
@@ -59,24 +59,6 @@ export class EditorFormComponent implements OnInit {
     }
 
     cancelClicked() {
-        this.dialogService.openDefaultDialog(new PepDialogData({
-            title: 'Are you sure?',
-            actionButtons: [
-                {
-                    title: this.translate.instant('No'),
-                    className: 'regular',
-                    callback: () => {
-                        this.goBack()
-                    }
-                },
-                {
-                    title: this.translate.instant('Yes'),
-                    className: 'strong',
-                    callback: () => {
-                        this.goBack()
-                    }
-                }
-            ]
-        }))
+        this.close(undefined);
     }
 }

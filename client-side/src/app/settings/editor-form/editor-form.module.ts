@@ -14,10 +14,12 @@ import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
 import { PepDialogModule } from '@pepperi-addons/ngx-lib/dialog';
 import { PepMenuModule } from '@pepperi-addons/ngx-lib/menu';
 import { PepTextboxModule } from '@pepperi-addons/ngx-lib/textbox';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { PepGenericListModule } from '@pepperi-addons/ngx-composite-lib/generic-list';
 
 import { EditorFormComponent } from './editor-form.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 const pepIcons = [
     pepIconSystemClose,
@@ -47,10 +49,13 @@ export const routes: Routes = [
         PepDialogModule,
         PepTextboxModule,
         PepGenericListModule,
+        PepDialogModule,
+        MatDialogModule,
+        BrowserAnimationsModule,
         TranslateModule.forChild(),
         RouterModule.forChild(routes)
     ],
-    exports:[EditorFormComponent]
+    exports: [EditorFormComponent]
 })
 export class EditorFormModule {
     constructor(
