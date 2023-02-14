@@ -7,7 +7,7 @@ import { IPepGenericListDataSource, IPepGenericListActions } from "@pepperi-addo
 import { FomoService } from "src/services/fomo.service";
 import { FilterObject } from "../../../../../shared/types";
 import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
-import { EditorFormComponent } from "../editor-form/editor-form.component";
+import { FilterFormComponent } from "../filter-form/filter-form.component";
 
 @Component({
     selector: 'filters-list',
@@ -42,13 +42,13 @@ export class FiltersListComponent implements OnInit {
     }
 
 
-    private async openAttachmentDialog(callback: (value: any) => void) {
+    private async openAttachmentDialog(callback: (value: any) => void, data?: { filterObject: FilterObject }) {
         const config = this.dialogService.getDialogConfig({}, 'large');
 
         config.data = new PepDialogData({
-            content: EditorFormComponent,
+            content: FilterFormComponent,
         })
-        this.dialogService.openDialog(EditorFormComponent, {}, config).afterClosed().subscribe((value) => {
+        this.dialogService.openDialog(FilterFormComponent, data, config).afterClosed().subscribe((value) => {
             if (value) {
                 console.log(JSON.stringify(value));
                 callback(value);
@@ -154,26 +154,41 @@ export class FiltersListComponent implements OnInit {
     }
     listDataSource: IPepGenericListDataSource = this.getDataSource();
 
+    editAction = {
+        title: this.translate.instant("Edit"),
+        handler: async (data) => {
+            const filterObjectKey = data?.rows[0];
+            const filterObject = this.filterObjectsMap.get(filterObjectKey);
+            this.openAttachmentDialog((value) => {
+                console.log(`callback from dialog: ${JSON.stringify(value)}`);
+            }, { filterObject });
+        }
+    }
+
+    deleteAction = {
+        title: this.translate.instant("Delete"),
+        handler: async (data) => {
+            const filterObjectKeys = data?.rows;
+            await this.fomoService.deleteFilterObjects(filterObjectKeys);
+            this.listDataSource = this.getDataSource();
+        }
+    }
+
     actions: IPepGenericListActions = {
         get: async (data: PepSelectionData) => {
-            if (data.rows.length) {
-                return [{
-                    title: this.translate.instant("Edit"),
-                    handler: async (data) => {
-                        this.openAttachmentDialog((value) => {
-                            console.log(`callback from dialog: ${JSON.stringify(value)}`);
-                        });
-                    }
-                },
-                {
-                    title: this.translate.instant("Delete"),
-                    handler: async (data) => {
-                        const filterObjectKeys = data?.rows;
-                        await this.fomoService.deleteFilterObjects(filterObjectKeys);
-                        this.listDataSource = this.getDataSource();
-                    }
-                }]
-            } else return []
+            console.log(`get rows ${JSON.stringify(data?.rows)}`);
+            if (data.rows.length == 1) {
+                return [
+                    this.editAction,
+                    this.deleteAction
+                ]
+            }
+            else if (data.rows.length > 1) {
+                return [
+                    this.deleteAction
+                ]
+            }
+            else return []
         }
     }
 }

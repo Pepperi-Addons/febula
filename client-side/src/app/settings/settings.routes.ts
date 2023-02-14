@@ -8,7 +8,7 @@ const routes: Routes = [
         children: [
             {
                 path: ':form_key',
-                loadChildren: () => import('./editor-form/editor-form.module').then(m => m.EditorFormModule)
+                loadChildren: () => import('./filter-form/filter-form.module').then(m => m.FilterFormModule)
             },
             {
                 path: '**',

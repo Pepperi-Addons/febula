@@ -8,7 +8,7 @@ import { PepNgxLibModule, PepAddonService } from '@pepperi-addons/ngx-lib';
 import { SettingsRoutingModule } from './settings.routes';
 import { SettingsComponent } from './settings.component';
 
-import { EditorFormModule } from './editor-form/editor-form.module';
+import { FilterFormModule } from './filter-form/filter-form.module';
 import { FiltersListModule } from './filters-list/filters-list.module';
 
 import { MatTabsModule } from '@angular/material/tabs';
@@ -25,7 +25,7 @@ import { SettingsTabsModule } from './settings-tabs/settings-tabs.module';
         PepNgxLibModule,
         MatTabsModule,
         FiltersListModule,
-        EditorFormModule,
+        FilterFormModule,
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,
