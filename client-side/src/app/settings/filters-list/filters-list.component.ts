@@ -8,6 +8,7 @@ import { FomoService } from "src/services/fomo.service";
 import { FilterObject } from "../../../../../shared/types";
 import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
 import { FilterFormComponent } from "../filter-form/filter-form.component";
+import { config } from "../../app.config";
 
 @Component({
     selector: 'filters-list',
@@ -54,6 +55,10 @@ export class FiltersListComponent implements OnInit {
                 callback(value);
             }
         });
+    }
+
+    private isLocked(filterObject: FilterObject) {
+        return filterObject.AddonUUID && filterObject.AddonUUID != config.AddonUUID;
     }
 
     buttonClick($event: any) {
@@ -123,6 +128,13 @@ export class FiltersListComponent implements OnInit {
                                 Title: 'In Filter Rule',
                                 Mandatory: false,
                                 ReadOnly: true
+                            },
+                            {
+                                FieldID: 'Locked',
+                                Type: 'Boolean',
+                                Title: 'Locked',
+                                Mandatory: true,
+                                ReadOnly: true
                             }
 
                         ],
@@ -141,12 +153,20 @@ export class FiltersListComponent implements OnInit {
                             },
                             {
                                 Width: 25
+                            },
+                            {
+                                Width: 10
                             }
                         ],
                         FrozenColumnsCount: 0,
                         MinimumColumnWidth: 0
                     },
-                    items: this.filterObjects,
+                    items: this.filterObjects.map(filterObject => {
+                        return {
+                            ...filterObject,
+                            Locked: this.isLocked(filterObject)
+                        }
+                    }),
                     totalCount: this.filterObjects.length
                 }
             }
@@ -176,7 +196,13 @@ export class FiltersListComponent implements OnInit {
 
     actions: IPepGenericListActions = {
         get: async (data: PepSelectionData) => {
-            console.log(`get rows ${JSON.stringify(data?.rows)}`);
+            // if there is at least one selected row for which the FilterObject has an OwnerUUID that is not config.AddonUUID, then return empty array. we don't want to show the actions in this case since the user doesn't have permission to edit or delete the FilterObject.
+            if (data.rows.some(row => {
+                const filterObject = this.filterObjectsMap.get(row);
+                return this.isLocked(filterObject);
+            })) {
+                return [];
+            }
             if (data.rows.length == 1) {
                 return [
                     this.editAction,

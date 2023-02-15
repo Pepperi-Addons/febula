@@ -82,6 +82,9 @@ export abstract class BasicTableService<T extends AddonData>{
         if (!addonData.Key) {
             addonData.Key = uuid();
         }
+        if (!addonData.AddonUUID) {
+            (addonData as any).AddonUUID = this.ownerUUID;
+        }
 
         await this.validateData(addonData);
         await this.validateOwner();

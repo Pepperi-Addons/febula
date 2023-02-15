@@ -143,9 +143,8 @@ export class FilterFormService {
         return this.stringArrayToOptionsArray(this.previousFilterOptions);
     }
 
-    async saveFilterObject(): Promise<FilterObject> {
-        //TODO - save filter object and return it
-        return this.filterObject;
+    async save(): Promise<FilterObject> {
+        return await this.fomoService.upsertFilterObject(this.filterObject);
     }
 
     getDataView(): IPepGenericFormDataView {
@@ -182,7 +181,7 @@ export class FilterFormService {
                 "AdditionalProps": { "emptyOption": false },
                 "Title": "Resource",
                 "Mandatory": true,
-                "ReadOnly": (this.mode === 'Edit') || (this.resourceOptions.length === 0),
+                "ReadOnly": (this.mode === 'Edit'),// || (this.resourceOptions.length === 0),
                 "Layout": {
                     "Origin": {
                         "X": 0,
@@ -203,7 +202,7 @@ export class FilterFormService {
             "AdditionalProps": { "emptyOption": false },
             "Title": "Field which contains the required values (Only resource fields can be used)",
             "Mandatory": true,
-            "ReadOnly": (this.mode === 'Edit') || (this.fieldOptions.length === 0),
+            "ReadOnly": (this.mode === 'Edit'),// || (this.fieldOptions.length === 0),
             "Layout": {
                 "Origin": {
                     "X": 1,
@@ -254,7 +253,7 @@ export class FilterFormService {
             "AdditionalProps": { "emptyOption": false },
             "Title": "Field",
             "Mandatory": true,
-            "ReadOnly": (this.previousFieldOptions.length === 0),
+            "ReadOnly": false,//(this.previousFieldOptions.length === 0),
             "Layout": {
                 "Origin": {
                     "X": 0,
@@ -280,7 +279,7 @@ export class FilterFormService {
             "AdditionalProps": { "emptyOption": false },
             "Title": "in",
             "Mandatory": true,
-            "ReadOnly": (this.previousFilterOptions.length === 0),
+            "ReadOnly": false,//(this.previousFilterOptions.length === 0),
             "Layout": {
                 "Origin": {
                     "X": 1,

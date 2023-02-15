@@ -15,11 +15,15 @@ import { FilterObject } from "../../../../../shared/types";
     styleUrls: ['./filter-form.component.scss']
 })
 export class FilterFormComponent implements OnInit {
+    formValidationChange($event: boolean) {
+        this.saveDisabled = !$event;
+    }
 
     mode: 'Edit' | 'Add'
     screenSize: PepScreenSizeType;
     filterTitle: string;
     filterFormService: FilterFormService;
+    saveDisabled: boolean = false;
 
     constructor(
         public layoutService: PepLayoutService,
@@ -92,10 +96,9 @@ export class FilterFormComponent implements OnInit {
         this.close(undefined);
     }
 
-    saveClicked() {
-        this.dialogService.openDefaultDialog(new PepDialogData({
-            title: 'Saved'
-        }))
+    async saveClicked() {
+        const result = await this.filterFormService.save();
+        this.close(result);
     }
 
     cancelClicked() {

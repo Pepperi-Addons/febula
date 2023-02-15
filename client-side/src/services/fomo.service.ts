@@ -80,7 +80,7 @@ export class FomoService {
 
     async deleteFilterObjects(filterObjectKeys: string[]): Promise<any> {
         try {
-            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'api', 'filters_delete', { Keys: filterObjectKeys }).toPromise();
+            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'client-side-endpoints', 'filters_delete', { Keys: filterObjectKeys }).toPromise();
             return postResults;
         }
         catch (ex) {
