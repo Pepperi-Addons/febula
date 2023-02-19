@@ -181,7 +181,7 @@ export class FilterFormService {
                 "AdditionalProps": { "emptyOption": false },
                 "Title": "Resource",
                 "Mandatory": true,
-                "ReadOnly": (this.mode === 'Edit'),// || (this.resourceOptions.length === 0),
+                "ReadOnly": (this.mode === 'Edit'),
                 "Layout": {
                     "Origin": {
                         "X": 0,
@@ -202,7 +202,7 @@ export class FilterFormService {
             "AdditionalProps": { "emptyOption": false },
             "Title": "Field which contains the required values (Only resource fields can be used)",
             "Mandatory": true,
-            "ReadOnly": (this.mode === 'Edit'),// || (this.fieldOptions.length === 0),
+            "ReadOnly": (this.mode === 'Edit'),
             "Layout": {
                 "Origin": {
                     "X": 1,
@@ -253,7 +253,7 @@ export class FilterFormService {
             "AdditionalProps": { "emptyOption": false },
             "Title": "Field",
             "Mandatory": true,
-            "ReadOnly": false,//(this.previousFieldOptions.length === 0),
+            "ReadOnly": false,
             "Layout": {
                 "Origin": {
                     "X": 0,
@@ -279,7 +279,7 @@ export class FilterFormService {
             "AdditionalProps": { "emptyOption": false },
             "Title": "in",
             "Mandatory": true,
-            "ReadOnly": false,//(this.previousFilterOptions.length === 0),
+            "ReadOnly": false,
             "Layout": {
                 "Origin": {
                     "X": 1,
