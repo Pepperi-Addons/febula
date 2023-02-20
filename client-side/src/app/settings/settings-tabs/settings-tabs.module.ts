@@ -5,11 +5,11 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { TranslateModule } from '@ngx-translate/core';
 
-import { PepNgxLibModule, PepAddonService } from '@pepperi-addons/ngx-lib';
+import { PepNgxLibModule } from '@pepperi-addons/ngx-lib';
 import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 import { PepSizeDetectorModule } from '@pepperi-addons/ngx-lib/size-detector';
 import { PepPageLayoutModule } from '@pepperi-addons/ngx-lib/page-layout';
-import { PepIconRegistry, PepIconModule, pepIconSystemClose } from '@pepperi-addons/ngx-lib/icon';
+import { PepIconRegistry, pepIconSystemClose } from '@pepperi-addons/ngx-lib/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 // import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
 // import { PepDialogModule } from '@pepperi-addons/ngx-lib/dialog';
@@ -20,6 +20,7 @@ import { PepGenericListModule } from '@pepperi-addons/ngx-composite-lib/generic-
 
 import { SettingsTabsComponent } from './settings-tabs.component';
 import { FiltersListModule } from "../filters-list/filters-list.module";
+import { ProfileFiltersListModule } from '../profile-filters-list/profile-filters-list.module';
 
 const pepIcons = [
     pepIconSystemClose,
@@ -53,7 +54,8 @@ export const routes: Routes = [
         MatTabsModule,
         TranslateModule.forChild(),
         RouterModule.forChild(routes),
-        FiltersListModule
+        FiltersListModule,
+        ProfileFiltersListModule
     ]
 })
 export class SettingsTabsModule {

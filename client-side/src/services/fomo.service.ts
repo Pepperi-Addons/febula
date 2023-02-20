@@ -45,9 +45,22 @@ export class FomoService {
         }
     }
 
-    async getFilterRules(): Promise<FilterRule[]> {
+    async getFilterObjectsByKeys(keys: string[]): Promise<FilterObject[]> {
         try {
-            const getResults = await this.pepAddonService.getAddonApiCall(config.AddonUUID, 'api', 'profile_filters?page_size=-1').toPromise();
+            const url = `get_filters_by_keys`;
+            const getResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'client-side-endpoints', url, { KeyList: keys }).toPromise();
+            return getResults as FilterObject[];
+        }
+        catch (ex) {
+            console.error(`Error in getFilterObjectsByKeys: ${ex}`);
+            throw ex;
+        }
+    }
+
+    async getFilterRules(searchString?: string): Promise<FilterRule[]> {
+        try {
+            const url = 'profile_filters?page_size=-1' + (searchString ? `&where=Resource like '%25${searchString}%25'` : '');
+            const getResults = await this.pepAddonService.getAddonApiCall(config.AddonUUID, 'api', url).toPromise();
             return getResults as FilterRule[];
         }
         catch (ex) {
@@ -88,5 +101,16 @@ export class FomoService {
             throw ex
         }
 
+    }
+
+    async deleteFilterRules(filterRuleKeys: string[]): Promise<any> {
+        try {
+            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'client-side-endpoints', 'profile_filters_delete', { Keys: filterRuleKeys }).toPromise();
+            return postResults;
+        }
+        catch (ex) {
+            console.error(`Error in upsertFilterObject: ${ex}`);
+            throw ex
+        }
     }
 }

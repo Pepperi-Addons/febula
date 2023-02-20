@@ -24,7 +24,7 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
         if (addonData.Filter) {
             const referencedFilterObjectKey = addonData.Filter;
             try {
-                const referencedFilterObject = await this.filterObjectService.getByKey(referencedFilterObjectKey);
+                const referencedFilterObject = await this.filterObjectService.getByKeys([referencedFilterObjectKey])[0];
                 if (!referencedFilterObject) {
                     throw new Error(`Reference validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nKey: ${referencedFilterObjectKey} not found.`);
                 }

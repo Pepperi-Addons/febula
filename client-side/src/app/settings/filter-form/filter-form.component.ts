@@ -4,8 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { IPepGenericFormDataView, IPepGenericFormValueChange } from "@pepperi-addons/ngx-composite-lib/generic-form";
 import { PepAddonService, PepLayoutService, PepScreenSizeType } from '@pepperi-addons/ngx-lib';
-import { PepDialogData, PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
-import { BaseFormDataViewField } from "@pepperi-addons/papi-sdk/dist/entities";
+import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 import { FilterFormService } from "src/services/filter-form.service";
 import { FilterObject } from "../../../../../shared/types";
 

@@ -1,5 +1,6 @@
 import { Client, Request } from '@pepperi-addons/debug-server'
 import { Collection, PapiClient } from '@pepperi-addons/papi-sdk';
+import { FilterObject } from '../shared/types';
 import { FilterObjectService } from './services/filter-object.service';
 import { FilterRuleService } from './services/filter-rule.service';
 
@@ -36,6 +37,22 @@ export async function get_udcs(client: Client, request: Request): Promise<Collec
         throw new Error((ex as { message: string }).message);
     }
 }
+
+export async function get_filters_by_keys(client: Client, request: Request): Promise<FilterObject[]> {
+    const filterObjectService = new FilterObjectService(client, request.header['x-pepperi-ownerid'], request.header['x-pepperi-secretkey']);
+    try {
+        console.log(`start get_filters_by_keys request. body - ${JSON.stringify(request.body)}`);
+        const filterObjectKeys = request.body.KeyList as string[];
+        const result = await filterObjectService.getByKeys(filterObjectKeys);
+        console.log(`end get_filters_by_keys request. result - ${JSON.stringify(result)}`);
+        return result;
+    }
+    catch (ex) {
+        console.error(`get_filters_by_keys failed. error - ${ex}`);
+        throw new Error((ex as { message: string }).message);
+    }
+}
+
 
 export async function filters_delete(client: Client, request: Request) {
     const filterObjectService = new FilterObjectService(client, request.header['x-pepperi-ownerid'], request.header['x-pepperi-secretkey']);

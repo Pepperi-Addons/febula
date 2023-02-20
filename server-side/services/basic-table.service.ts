@@ -102,8 +102,8 @@ export abstract class BasicTableService<T extends AddonData>{
         return (await this.papiClient.addons.data.uuid(this.client.AddonUUID).table(this.schemaName).find(options)) as T[];
     }
 
-    async getByKey(key: string): Promise<T> {
-        return (await this.papiClient.addons.data.uuid(this.client.AddonUUID).table(this.schemaName).key(key).get()) as T;
+    async getByKeys(keys: string[]): Promise<T[]> {
+        return (await (await this.papiClient.addons.data.search.uuid(this.client.AddonUUID).table(this.schemaName).post({ KeyList: keys })).Objects) as T[];
     }
 
     async delete(keys: string[]): Promise<any> {

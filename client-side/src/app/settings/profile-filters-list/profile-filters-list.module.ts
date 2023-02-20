@@ -17,7 +17,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 
 import { PepGenericListModule } from '@pepperi-addons/ngx-composite-lib/generic-list';
 
-import { FiltersListComponent } from './filters-list.component';
+import { ProfileFiltersListComponent } from './profile-filters-list.component';
 import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
 
 const pepIcons = [
@@ -26,7 +26,7 @@ const pepIcons = [
 
 @NgModule({
     declarations: [
-        FiltersListComponent
+        ProfileFiltersListComponent
     ],
     imports: [
         CommonModule,
@@ -45,9 +45,9 @@ const pepIcons = [
         PepButtonModule,
         TranslateModule.forChild(),
     ],
-    exports: [FiltersListComponent]
+    exports: [ProfileFiltersListComponent]
 })
-export class FiltersListModule {
+export class ProfileFiltersListModule {
     constructor(
         private pepIconRegistry: PepIconRegistry,
     ) {
