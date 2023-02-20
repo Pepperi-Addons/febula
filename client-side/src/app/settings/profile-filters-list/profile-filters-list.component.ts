@@ -6,9 +6,8 @@ import { PepSelectionData } from '@pepperi-addons/ngx-lib/list';
 import { IPepGenericListDataSource, IPepGenericListActions } from "@pepperi-addons/ngx-composite-lib/generic-list";
 import { FomoService } from "src/services/fomo.service";
 import { FilterObject, FilterRule } from "../../../../../shared/types";
-import { PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
-// TODO future task
-//import { FilterFormComponent } from "../filter-form/filter-form.component";
+import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
+import { ProfileFiltersFormComponent } from "../profile-filters-form/profile-filters-form.component";
 
 
 @Component({
@@ -44,20 +43,20 @@ export class ProfileFiltersListComponent implements OnInit {
     ngOnInit() {
     }
 
-    // TODO future task
-    // private async openAttachmentDialog(callback: (value: any) => void, data?: { filterRule: FilterRule }) {
-    //     const config = this.dialogService.getDialogConfig({}, 'large');
 
-    //     config.data = new PepDialogData({
-    //         content: FilterRuleFormComponent,
-    //     })
-    //     this.dialogService.openDialog(FilterRuleFormComponent, data, config).afterClosed().subscribe((value) => {
-    //         if (value) {
-    //             console.log(JSON.stringify(value));
-    //             callback(value);
-    //         }
-    //     });
-    // }
+    private async openAttachmentDialog(callback: (value: any) => void, data?: { profileFilter: FilterRule }) {
+        const config = this.dialogService.getDialogConfig({}, 'large');
+
+        config.data = new PepDialogData({
+            content: ProfileFiltersFormComponent,
+        })
+        this.dialogService.openDialog(ProfileFiltersFormComponent, data, config).afterClosed().subscribe((value) => {
+            if (value) {
+                console.log(JSON.stringify(value));
+                callback(value);
+            }
+        });
+    }
 
     private getProfileName(employeeType: number) {
         switch (employeeType) {
@@ -78,10 +77,9 @@ export class ProfileFiltersListComponent implements OnInit {
 
     buttonClick($event: any) {
         console.log(`buttonClick: ${JSON.stringify($event)}`);
-        // TODO future task
-        // this.openAttachmentDialog((value) => {
-        //     console.log(`callback from dialog: ${JSON.stringify(value)}`);
-        // });
+        this.openAttachmentDialog((value) => {
+            console.log(`callback from dialog: ${JSON.stringify(value)}`);
+        });
     }
 
     updateFilterRulesMap(filterRules: FilterRule[]) {
@@ -180,10 +178,9 @@ export class ProfileFiltersListComponent implements OnInit {
         handler: async (data) => {
             const filterRuleKey = data?.rows[0];
             const filterRule = this.filterRulesMap.get(filterRuleKey);
-            // TODO future task
-            // this.openAttachmentDialog((value) => {
-            //     console.log(`callback from dialog: ${JSON.stringify(value)}`);
-            // }, { filterRule: filterRule });
+            this.openAttachmentDialog((value) => {
+                console.log(`callback from dialog: ${JSON.stringify(value)}`);
+            }, { profileFilter: filterRule });
         }
     }
 
