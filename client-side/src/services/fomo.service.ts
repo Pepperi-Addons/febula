@@ -2,8 +2,19 @@ import { PepAddonService } from "@pepperi-addons/ngx-lib";
 import { config } from "../app/app.config"
 import { FilterObject, FilterRule } from "../../../shared/types";
 import { Promise } from "bluebird";
+import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
 
 export class FomoService {
+    async getUDCs(): Promise<Collection[]> {
+        try {
+            const results = await this.pepAddonService.getAddonApiCall(config.AddonUUID, 'client-side-endpoints', 'get_udcs').toPromise();
+            return results as Collection[];
+        }
+        catch (ex) {
+            console.error(`Error in getUDCs: ${ex}`);
+            throw ex;
+        }
+    }
 
     MAX_PARALLEL = 10;
 
@@ -18,6 +29,18 @@ export class FomoService {
         }
         catch (ex) {
             console.error(`Error in getFilterObjects: ${ex}`);
+            throw ex;
+        }
+    }
+
+    async getFilterObjectsOfResource(resource: string): Promise<FilterObject[]> {
+        try {
+            const url = `filters?page_size=-1&where=Resource='${resource}'`;
+            const getResults = await this.pepAddonService.getAddonApiCall(config.AddonUUID, 'api', url).toPromise();
+            return getResults as FilterObject[];
+        }
+        catch (ex) {
+            console.error(`Error in getFilterObjectsOfResource: ${ex}`);
             throw ex;
         }
     }
@@ -57,7 +80,7 @@ export class FomoService {
 
     async deleteFilterObjects(filterObjectKeys: string[]): Promise<any> {
         try {
-            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'api', 'filters_delete', { Keys: filterObjectKeys }).toPromise();
+            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'client-side-endpoints', 'filters_delete', { Keys: filterObjectKeys }).toPromise();
             return postResults;
         }
         catch (ex) {

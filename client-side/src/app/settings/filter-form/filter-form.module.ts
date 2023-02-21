@@ -17,8 +17,9 @@ import { PepTextboxModule } from '@pepperi-addons/ngx-lib/textbox';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { PepGenericListModule } from '@pepperi-addons/ngx-composite-lib/generic-list';
+import { PepGenericFormModule } from '@pepperi-addons/ngx-composite-lib/generic-form';
 
-import { EditorFormComponent } from './editor-form.component';
+import { FilterFormComponent } from './filter-form.component';
 import { MatDialogModule } from '@angular/material/dialog';
 
 const pepIcons = [
@@ -28,13 +29,13 @@ const pepIcons = [
 export const routes: Routes = [
     {
         path: '',
-        component: EditorFormComponent
+        component: FilterFormComponent
     }
 ];
 
 @NgModule({
     declarations: [
-        EditorFormComponent,
+        FilterFormComponent,
     ],
     imports: [
         CommonModule,
@@ -48,6 +49,7 @@ export const routes: Routes = [
         PepButtonModule,
         PepDialogModule,
         PepTextboxModule,
+        PepGenericFormModule,
         PepGenericListModule,
         PepDialogModule,
         MatDialogModule,
@@ -55,9 +57,9 @@ export const routes: Routes = [
         TranslateModule.forChild(),
         RouterModule.forChild(routes)
     ],
-    exports: [EditorFormComponent]
+    exports: [FilterFormComponent]
 })
-export class EditorFormModule {
+export class FilterFormModule {
     constructor(
         private pepIconRegistry: PepIconRegistry
     ) {

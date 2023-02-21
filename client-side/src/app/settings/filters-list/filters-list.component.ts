@@ -7,7 +7,8 @@ import { IPepGenericListDataSource, IPepGenericListActions } from "@pepperi-addo
 import { FomoService } from "src/services/fomo.service";
 import { FilterObject } from "../../../../../shared/types";
 import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
-import { EditorFormComponent } from "../editor-form/editor-form.component";
+import { FilterFormComponent } from "../filter-form/filter-form.component";
+import { config } from "../../app.config";
 
 @Component({
     selector: 'filters-list',
@@ -42,18 +43,22 @@ export class FiltersListComponent implements OnInit {
     }
 
 
-    private async openAttachmentDialog(callback: (value: any) => void) {
+    private async openAttachmentDialog(callback: (value: any) => void, data?: { filterObject: FilterObject }) {
         const config = this.dialogService.getDialogConfig({}, 'large');
 
         config.data = new PepDialogData({
-            content: EditorFormComponent,
+            content: FilterFormComponent,
         })
-        this.dialogService.openDialog(EditorFormComponent, {}, config).afterClosed().subscribe((value) => {
+        this.dialogService.openDialog(FilterFormComponent, data, config).afterClosed().subscribe((value) => {
             if (value) {
                 console.log(JSON.stringify(value));
                 callback(value);
             }
         });
+    }
+
+    private isLocked(filterObject: FilterObject) {
+        return filterObject.AddonUUID && filterObject.AddonUUID != config.AddonUUID;
     }
 
     buttonClick($event: any) {
@@ -123,6 +128,13 @@ export class FiltersListComponent implements OnInit {
                                 Title: 'In Filter Rule',
                                 Mandatory: false,
                                 ReadOnly: true
+                            },
+                            {
+                                FieldID: 'Locked',
+                                Type: 'Boolean',
+                                Title: 'Locked',
+                                Mandatory: true,
+                                ReadOnly: true
                             }
 
                         ],
@@ -141,12 +153,20 @@ export class FiltersListComponent implements OnInit {
                             },
                             {
                                 Width: 25
+                            },
+                            {
+                                Width: 10
                             }
                         ],
                         FrozenColumnsCount: 0,
                         MinimumColumnWidth: 0
                     },
-                    items: this.filterObjects,
+                    items: this.filterObjects.map(filterObject => {
+                        return {
+                            ...filterObject,
+                            Locked: this.isLocked(filterObject)
+                        }
+                    }),
                     totalCount: this.filterObjects.length
                 }
             }
@@ -154,26 +174,47 @@ export class FiltersListComponent implements OnInit {
     }
     listDataSource: IPepGenericListDataSource = this.getDataSource();
 
+    editAction = {
+        title: this.translate.instant("Edit"),
+        handler: async (data) => {
+            const filterObjectKey = data?.rows[0];
+            const filterObject = this.filterObjectsMap.get(filterObjectKey);
+            this.openAttachmentDialog((value) => {
+                console.log(`callback from dialog: ${JSON.stringify(value)}`);
+            }, { filterObject });
+        }
+    }
+
+    deleteAction = {
+        title: this.translate.instant("Delete"),
+        handler: async (data) => {
+            const filterObjectKeys = data?.rows;
+            await this.fomoService.deleteFilterObjects(filterObjectKeys);
+            this.listDataSource = this.getDataSource();
+        }
+    }
+
     actions: IPepGenericListActions = {
         get: async (data: PepSelectionData) => {
-            if (data.rows.length) {
-                return [{
-                    title: this.translate.instant("Edit"),
-                    handler: async (data) => {
-                        this.openAttachmentDialog((value) => {
-                            console.log(`callback from dialog: ${JSON.stringify(value)}`);
-                        });
-                    }
-                },
-                {
-                    title: this.translate.instant("Delete"),
-                    handler: async (data) => {
-                        const filterObjectKeys = data?.rows;
-                        await this.fomoService.deleteFilterObjects(filterObjectKeys);
-                        this.listDataSource = this.getDataSource();
-                    }
-                }]
-            } else return []
+            // if there is at least one selected row for which the FilterObject has an OwnerUUID that is not config.AddonUUID, then return empty array. we don't want to show the actions in this case since the user doesn't have permission to edit or delete the FilterObject.
+            if (data.rows.some(row => {
+                const filterObject = this.filterObjectsMap.get(row);
+                return this.isLocked(filterObject);
+            })) {
+                return [];
+            }
+            if (data.rows.length == 1) {
+                return [
+                    this.editAction,
+                    this.deleteAction
+                ]
+            }
+            else if (data.rows.length > 1) {
+                return [
+                    this.deleteAction
+                ]
+            }
+            else return []
         }
     }
 }

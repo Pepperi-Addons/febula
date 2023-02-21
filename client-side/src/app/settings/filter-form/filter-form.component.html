@@ -1,0 +1,17 @@
+<pep-page-layout [addPadding]="true">
+    <ng-container pep-top-area>
+        <pep-top-bar [title]="filterTitle">
+            <div header-end-content>
+                <pep-button class="pep-spacing-element" [value]="'Cancel' | translate"
+                    (buttonClick)="cancelClicked()"></pep-button>
+                <pep-button class="pep-spacing-element" [value]="'Save' | translate" [disabled]="saveDisabled" [styleType]="'strong'"
+                    (buttonClick)="saveClicked()"></pep-button>
+            </div>
+        </pep-top-bar>
+    </ng-container>
+
+    <ng-container pep-main-area>
+        <pep-generic-form #filterForm [dataSource]="dataSource" (formValidationChange)="formValidationChange($event)" [dataView]="dataView" [isLocked]="false" [inline]="false"
+            [showTopBar]="false" [addPadding]="false" (valueChange)="valueChange($event)"></pep-generic-form>
+    </ng-container>
+</pep-page-layout>
