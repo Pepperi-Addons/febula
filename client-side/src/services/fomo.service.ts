@@ -7,7 +7,7 @@ import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
 export class FomoService {
     async getUDCs(): Promise<Collection[]> {
         try {
-            const results = await this.pepAddonService.getAddonApiCall(config.AddonUUID, 'client-side-endpoints', 'get_udcs').toPromise();
+            const results = await this.pepAddonService.getAddonApiCall(config.AddonUUID, 'client_side_endpoints', 'get_udcs').toPromise();
             return results as Collection[];
         }
         catch (ex) {
@@ -33,22 +33,10 @@ export class FomoService {
         }
     }
 
-    async getFilterObjectsOfResource(resource: string): Promise<FilterObject[]> {
-        try {
-            const url = `filters?page_size=-1&where=Resource='${resource}'`;
-            const getResults = await this.pepAddonService.getAddonApiCall(config.AddonUUID, 'api', url).toPromise();
-            return getResults as FilterObject[];
-        }
-        catch (ex) {
-            console.error(`Error in getFilterObjectsOfResource: ${ex}`);
-            throw ex;
-        }
-    }
-
     async getFilterObjectsByKeys(keys: string[]): Promise<FilterObject[]> {
         try {
             const url = `get_filters_by_keys`;
-            const getResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'client-side-endpoints', url, { KeyList: keys }).toPromise();
+            const getResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'client_side_endpoints', url, { KeyList: keys }).toPromise();
             return getResults as FilterObject[];
         }
         catch (ex) {
@@ -93,7 +81,7 @@ export class FomoService {
 
     async deleteFilterObjects(filterObjectKeys: string[]): Promise<any> {
         try {
-            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'client-side-endpoints', 'filters_delete', { Keys: filterObjectKeys }).toPromise();
+            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'client_side_endpoints', 'filters_delete', { Keys: filterObjectKeys }).toPromise();
             return postResults;
         }
         catch (ex) {
@@ -105,7 +93,7 @@ export class FomoService {
 
     async deleteFilterRules(filterRuleKeys: string[]): Promise<any> {
         try {
-            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'client-side-endpoints', 'profile_filters_delete', { Keys: filterRuleKeys }).toPromise();
+            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'client_side_endpoints', 'profile_filters_delete', { Keys: filterRuleKeys }).toPromise();
             return postResults;
         }
         catch (ex) {

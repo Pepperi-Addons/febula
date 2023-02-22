@@ -16,9 +16,11 @@ export class FilterFormService {
     private previousFieldOptions: string[] = [];
     private previousFilterOptions: string[] = [];
     private chosenResource: Collection;
+    private filterObjectList: FilterObject[];
 
-    constructor(private pepAddonService: PepAddonService, filterObject?: FilterObject) {
+    constructor(private pepAddonService: PepAddonService, filterObjectList: FilterObject[], filterObject?: FilterObject) {
         this.fomoService = new FomoService(pepAddonService);
+        this.filterObjectList = filterObjectList;
         this.filterObject = filterObject ? filterObject : {
             Name: '',
             Resource: '',
@@ -34,6 +36,7 @@ export class FilterFormService {
     }
 
     async getResources(): Promise<Collection[]> {
+        // this is called only once during init
         return await this.fomoService.getUDCs();
     }
 
@@ -57,8 +60,12 @@ export class FilterFormService {
             return;
         }
         const previousFieldResourceName = this.chosenResource.Fields[this.filterObject.PreviousField].Resource;
-        this.previousFilters = await this.fomoService.getFilterObjectsOfResource(previousFieldResourceName);
+        this.previousFilters = this.getFilterObjectsOfResource(previousFieldResourceName);
         this.previousFilterOptions = this.previousFilters.map((filter) => filter.Name);
+    }
+
+    getFilterObjectsOfResource(previousFieldResourceName: string): FilterObject[] {
+        return this.filterObjectList.filter((filterObject) => filterObject.Resource === previousFieldResourceName);
     }
 
 

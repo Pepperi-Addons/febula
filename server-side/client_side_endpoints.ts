@@ -39,7 +39,7 @@ export async function get_udcs(client: Client, request: Request): Promise<Collec
 }
 
 export async function get_filters_by_keys(client: Client, request: Request): Promise<FilterObject[]> {
-    const filterObjectService = new FilterObjectService(client, request.header['x-pepperi-ownerid'], request.header['x-pepperi-secretkey']);
+    const filterObjectService = new FilterObjectService(client);
     try {
         console.log(`start get_filters_by_keys request. body - ${JSON.stringify(request.body)}`);
         const filterObjectKeys = request.body.KeyList as string[];
@@ -55,7 +55,7 @@ export async function get_filters_by_keys(client: Client, request: Request): Pro
 
 
 export async function filters_delete(client: Client, request: Request) {
-    const filterObjectService = new FilterObjectService(client, request.header['x-pepperi-ownerid'], request.header['x-pepperi-secretkey']);
+    const filterObjectService = new FilterObjectService(client);
     try {
         if (request.method === 'POST') {
             console.log(`start delete_filters request. body - ${JSON.stringify(request.body)}`);
@@ -76,7 +76,7 @@ export async function filters_delete(client: Client, request: Request) {
 }
 
 export async function profile_filters_delete(client: Client, request: Request) {
-    const filterRuleService = new FilterRuleService(client, request.header['x-pepperi-ownerid'], request.header['x-pepperi-secretkey']);
+    const filterRuleService = new FilterRuleService(client);
     try {
         if (request.method === 'POST') {
             console.log(`start delete_profile_filters request. body - ${JSON.stringify(request.body)}`);

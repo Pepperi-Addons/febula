@@ -20,7 +20,7 @@ export class ProfileFiltersListComponent implements OnInit {
     screenSize: PepScreenSizeType;
     fomoService: FomoService;
     filterRulesMap: Map<string, FilterRule> = new Map<string, FilterRule>();
-    filterRules: FilterRule[] = [];
+    filterRules?: FilterRule[] = undefined;
     filterKeyToNameMap: Map<string, string> = new Map<string, string>();
 
 
@@ -37,7 +37,6 @@ export class ProfileFiltersListComponent implements OnInit {
             this.screenSize = size;
         });
         this.fomoService = new FomoService(this.pepAddonService);
-
     }
 
     ngOnInit() {
@@ -50,7 +49,7 @@ export class ProfileFiltersListComponent implements OnInit {
         config.data = new PepDialogData({
             content: ProfileFiltersFormComponent,
         })
-        this.dialogService.openDialog(ProfileFiltersFormComponent, data, config).afterClosed().subscribe((value) => {
+        this.dialogService.openDialog(ProfileFiltersFormComponent, { ...data, filterRulesList: this.filterRules }, config).afterClosed().subscribe((value) => {
             if (value) {
                 console.log(JSON.stringify(value));
                 callback(value);
@@ -83,14 +82,12 @@ export class ProfileFiltersListComponent implements OnInit {
     }
 
     updateFilterRulesMap(filterRules: FilterRule[]) {
-        this.filterRulesMap.clear();
         filterRules.forEach(filterRule => {
             this.filterRulesMap.set(filterRule.Key, filterRule);
         });
     }
 
     updateFilterKeyToNameMap(filterObjects: FilterObject[]) {
-        this.filterKeyToNameMap.clear();
         filterObjects.forEach(filterObject => {
             this.filterKeyToNameMap.set(filterObject.Key, filterObject.Name);
         });
@@ -101,18 +98,41 @@ export class ProfileFiltersListComponent implements OnInit {
         this.updateFilterKeyToNameMap(filterObjects);
     }
 
-    async updateFilterRules(searchString: string) {
-        this.filterRules = await this.fomoService.getFilterRules(searchString);
-        this.updateFilterRulesMap(this.filterRules);
-        const keyList = this.filterRules.map(filterRule => filterRule.Filter);
-        await this.updateFilterObjectNames(keyList);
+    async updateFilterRules() {
+        try {
+            this.filterRules = await this.fomoService.getFilterRules();
+            this.updateFilterRulesMap(this.filterRules);
+            const keyList = this.filterRules.map(filterRule => filterRule.Filter);
+            await this.updateFilterObjectNames(keyList);
+        }
+        catch (ex) {
+            console.error(`updateFilterRules: ${ex}`);
+            throw ex;
+        }
     }
 
+    async getSearchedFilterRules(searchText?: string): Promise<FilterRule[]> {
+        if (this.filterRules === undefined) {
+            try {
+                await this.updateFilterRules();
+            }
+            catch (ex) {
+                console.error(`Error in getSearchedFilterObjects: ${ex}`);
+                throw ex;
+            }
+        }
+        if (!searchText) {
+            return this.filterRules;
+        }
+        return this.filterRules.filter(filterRule => {
+            return filterRule.Resource.toLowerCase().includes(searchText.toLowerCase());
+        });
+    }
 
     getDataSource() {
         return {
             init: async (state) => {
-                await this.updateFilterRules(state?.searchString);
+                const searchedFilterRules = await this.getSearchedFilterRules(state.searchString);
                 return {
                     dataView: {
                         Context: {
@@ -159,7 +179,7 @@ export class ProfileFiltersListComponent implements OnInit {
                         FrozenColumnsCount: 0,
                         MinimumColumnWidth: 0
                     },
-                    items: this.filterRules.map(filterRule => {
+                    items: searchedFilterRules.map(filterRule => {
                         return {
                             ...filterRule,
                             Profile: this.getProfileName(filterRule.EmployeeType),

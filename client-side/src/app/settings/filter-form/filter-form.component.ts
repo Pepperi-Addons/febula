@@ -32,14 +32,14 @@ export class FilterFormComponent implements OnInit {
         public router: Router,
         public activatedRoute: ActivatedRoute,
         public pepAddonService: PepAddonService,
-        @Inject(MAT_DIALOG_DATA) public incoming?: { filterObject: FilterObject }
+        @Inject(MAT_DIALOG_DATA) public incoming: { filterObjectList: FilterObject[], filterObject: FilterObject }
     ) {
         this.layoutService.onResize$.subscribe(size => {
             this.screenSize = size;
         });
 
-        this.filterTitle = incoming?.filterObject ? `Edit Filter ${incoming!.filterObject.Name}` : "Create new Filter";
-        this.filterFormService = new FilterFormService(this.pepAddonService, incoming?.filterObject);
+        this.filterTitle = incoming.filterObject ? `Edit Filter ${incoming.filterObject.Name}` : "Create new Filter";
+        this.filterFormService = new FilterFormService(this.pepAddonService, incoming.filterObjectList, incoming.filterObject);
     }
 
     dataSource: FilterObject;

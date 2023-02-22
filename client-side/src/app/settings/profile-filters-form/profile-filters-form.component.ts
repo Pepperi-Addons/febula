@@ -33,13 +33,13 @@ export class ProfileFiltersFormComponent implements OnInit {
         public router: Router,
         public activatedRoute: ActivatedRoute,
         public pepAddonService: PepAddonService,
-        @Inject(MAT_DIALOG_DATA) public incoming?: { profileFilter: FilterRule }
+        @Inject(MAT_DIALOG_DATA) public incoming?: { filterRuleList:FilterRule[], filterRule: FilterRule }
     ) {
         this.layoutService.onResize$.subscribe(size => {
             this.screenSize = size;
         });
 
-        this.profileFiltersTitle = incoming?.profileFilter ? `Edit Profile-Filter` : `Create new Profile-Filter`;
+        this.profileFiltersTitle = incoming?.filterRule ? `Edit Profile-Filter` : `Create new Profile-Filter`;
         //TODO future task
         //this.filterFormService = new FilterFormService(this.pepAddonService, incoming?.filterObject);
     }
