@@ -28,12 +28,12 @@ export async function get_resources(client: Client, request: Request): Promise<A
             addonSecretKey: client.AddonSecretKey,
             actionUUID: client['ActionUUID']
         });
-        const resources: AddonData[] = await papiClient.resources.resource('resources').get({page_size: -1})
+        const resources: AddonData[] = await papiClient.resources.resource('resources').get({ page_size: -1 })
         const filteredResources = resources.filter(filterAtLeastTwoResources);
         return filteredResources;
     }
     catch (ex) {
-        console.error(`Error in get_udcs: ${ex}`);
+        console.error(`Error in get_resources: ${ex}`);
         throw new Error((ex as { message: string }).message);
     }
 }
