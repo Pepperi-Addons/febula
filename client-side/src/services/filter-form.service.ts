@@ -37,7 +37,7 @@ export class FilterFormService {
 
     async getResources(): Promise<Collection[]> {
         // this is called only once during init
-        return await this.fomoService.getUDCs();
+        return await this.fomoService.getResources();
     }
 
     private async setResourceOptions() {

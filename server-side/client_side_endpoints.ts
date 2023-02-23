@@ -1,16 +1,16 @@
 import { Client, Request } from '@pepperi-addons/debug-server'
-import { Collection, PapiClient } from '@pepperi-addons/papi-sdk';
+import { AddonData, Collection, PapiClient } from '@pepperi-addons/papi-sdk';
 import { FilterObject } from '../shared/types';
 import { FilterObjectService } from './services/filter-object.service';
 import { FilterRuleService } from './services/filter-rule.service';
 
-export async function get_udcs(client: Client, request: Request): Promise<Collection[]> {
+export async function get_resources(client: Client, request: Request): Promise<AddonData[]> {
     // returns true if collection has at least 2 fields of type 'Resource'
-    const filterAtLeastTwoResources = (collection: Collection): boolean => {
-        if (collection.Fields) {
+    const filterAtLeastTwoResources = (resource: AddonData): boolean => {
+        if (resource.Fields) {
             let count = 0;
-            for (const field of Object.values(collection.Fields)) {
-                if (field.Type === 'Resource') {
+            for (const field of Object.values(resource.Fields)) {
+                if ((field as any).Type === 'Resource') {
                     count++;
                 }
             }
@@ -28,9 +28,9 @@ export async function get_udcs(client: Client, request: Request): Promise<Collec
             addonSecretKey: client.AddonSecretKey,
             actionUUID: client['ActionUUID']
         });
-        const udcs: Collection[] = await papiClient.userDefinedCollections.schemes.iter().toArray();
-        const filteredUdcs = udcs.filter(filterAtLeastTwoResources);
-        return filteredUdcs;
+        const resources: AddonData[] = await papiClient.resources.resource('resources').get({page_size: -1})
+        const filteredResources = resources.filter(filterAtLeastTwoResources);
+        return filteredResources;
     }
     catch (ex) {
         console.error(`Error in get_udcs: ${ex}`);

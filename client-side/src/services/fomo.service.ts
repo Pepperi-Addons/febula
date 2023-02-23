@@ -5,13 +5,13 @@ import { Promise } from "bluebird";
 import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
 
 export class FomoService {
-    async getUDCs(): Promise<Collection[]> {
+    async getResources(): Promise<Collection[]> {
         try {
-            const results = await this.pepAddonService.getAddonApiCall(config.AddonUUID, 'client_side_endpoints', 'get_udcs').toPromise();
+            const results = await this.pepAddonService.getAddonApiCall(config.AddonUUID, 'client_side_endpoints', 'get_resources').toPromise();
             return results as Collection[];
         }
         catch (ex) {
-            console.error(`Error in getUDCs: ${ex}`);
+            console.error(`Error in getResources: ${ex}`);
             throw ex;
         }
     }
