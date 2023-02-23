@@ -22,7 +22,7 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
         if (addonData.PreviousFilter) {
             const referencedFilterObjectKey = addonData.PreviousFilter;
             try {
-                const referencedFilterObject = await this.getByKey(referencedFilterObjectKey);
+                const referencedFilterObject = await this.getByKeys([referencedFilterObjectKey])[0];
                 if (!referencedFilterObject) {
                     throw new Error(`Reference validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nKey: ${referencedFilterObjectKey} not found.`);
                 }
