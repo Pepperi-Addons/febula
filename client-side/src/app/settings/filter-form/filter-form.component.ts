@@ -5,6 +5,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { IPepGenericFormDataView, IPepGenericFormValueChange } from "@pepperi-addons/ngx-composite-lib/generic-form";
 import { PepAddonService, PepLayoutService, PepScreenSizeType } from '@pepperi-addons/ngx-lib';
 import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
+import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
 import { FilterFormService } from "src/services/filter-form.service";
 import { FilterObject } from "../../../../../shared/types";
 
@@ -32,14 +33,13 @@ export class FilterFormComponent implements OnInit {
         public router: Router,
         public activatedRoute: ActivatedRoute,
         public pepAddonService: PepAddonService,
-        @Inject(MAT_DIALOG_DATA) public incoming: { filterObjectList: FilterObject[], filterObject: FilterObject }
+        @Inject(MAT_DIALOG_DATA) public incoming: { filterObjectList: FilterObject[], resourceList: Collection[], filterObject: FilterObject }
     ) {
         this.layoutService.onResize$.subscribe(size => {
             this.screenSize = size;
         });
-
         this.filterTitle = incoming.filterObject ? `Edit Filter ${incoming.filterObject.Name}` : "Create new Filter";
-        this.filterFormService = new FilterFormService(this.pepAddonService, incoming.filterObjectList, incoming.filterObject);
+        this.filterFormService = new FilterFormService(this.pepAddonService, incoming.filterObjectList, incoming.resourceList, incoming.filterObject);
     }
 
     dataSource: FilterObject;
@@ -54,34 +54,34 @@ export class FilterFormComponent implements OnInit {
         this.dataSource = this.filterFormService.getFilterObject();
     }
 
-    async ngOnInit() {
-        await this.filterFormService.init();
+    ngOnInit() {
+        this.filterFormService.init();
         this.updateDataSource();
         this.updateDataView();
     }
 
 
-    async valueChange($event: IPepGenericFormValueChange) {
+    valueChange($event: IPepGenericFormValueChange) {
         console.log($event);
         // switch case for ApiName
         switch ($event.ApiName) {
             case 'Name':
-                await this.filterFormService.setName($event.Value);
+                this.filterFormService.setName($event.Value);
                 break;
             case 'Resource':
-                await this.filterFormService.setResource($event.Value);
+                this.filterFormService.setResource($event.Value);
                 this.updateDataView();
                 break;
             case 'Field':
-                await this.filterFormService.setField($event.Value);
+                this.filterFormService.setField($event.Value);
                 this.updateDataView();
                 break;
             case 'PreviousField':
-                await this.filterFormService.setPreviousField($event.Value);
+                this.filterFormService.setPreviousField($event.Value);
                 this.updateDataView();
                 break;
             case 'PreviousFilter':
-                await this.filterFormService.setPreviousFilter($event.Value);
+                this.filterFormService.setPreviousFilter($event.Value);
                 this.updateDataView();
                 break;
         }

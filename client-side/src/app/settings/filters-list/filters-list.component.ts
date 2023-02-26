@@ -9,6 +9,7 @@ import { FilterObject } from "../../../../../shared/types";
 import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
 import { FilterFormComponent } from "../filter-form/filter-form.component";
 import { config } from "../../app.config";
+import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
 
 @Component({
     selector: 'filters-list',
@@ -21,6 +22,7 @@ export class FiltersListComponent implements OnInit {
     fomoService: FomoService;
     filterObjectsMap: Map<string, FilterObject> = new Map<string, FilterObject>();
     filterObjects?: FilterObject[] = undefined;
+    resources?: Collection[] = undefined;
 
 
     constructor(
@@ -48,7 +50,7 @@ export class FiltersListComponent implements OnInit {
         config.data = new PepDialogData({
             content: FilterFormComponent,
         })
-        this.dialogService.openDialog(FilterFormComponent, { ...data, filterObjectList: this.filterObjects }, config).afterClosed().subscribe((value) => {
+        this.dialogService.openDialog(FilterFormComponent, { ...data, filterObjectList: this.filterObjects, resourceList: this.resources }, config).afterClosed().subscribe((value) => {
             if (value) {
                 console.log(JSON.stringify(value));
                 callback(value);
@@ -83,15 +85,28 @@ export class FiltersListComponent implements OnInit {
         }
     }
 
+    async updateResources() {
+        try {
+            this.resources = await this.fomoService.getResources();
+        }
+        catch (ex) {
+            console.error(`Error in updateResources: ${ex}`);
+            throw ex;
+        }
+    }
+
     async getSearchedFilterObjects(searchText?: string): Promise<FilterObject[]> {
-        if (this.filterObjects === undefined) {
-            try {
+        try {
+            if (this.filterObjects === undefined) {
                 await this.updateFilterObjects();
             }
-            catch (ex) {
-                console.error(`Error in getSearchedFilterObjects: ${ex}`);
-                throw ex;
+            if (this.resources === undefined) {
+                await this.updateResources();
             }
+        }
+        catch (ex) {
+            console.error(`Error in getSearchedFilterObjects: ${ex}`);
+            throw ex;
         }
         if (!searchText) {
             return this.filterObjects;

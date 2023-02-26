@@ -18,9 +18,10 @@ export class FilterFormService {
     private chosenResource: Collection;
     private filterObjectList: FilterObject[];
 
-    constructor(private pepAddonService: PepAddonService, filterObjectList: FilterObject[], filterObject?: FilterObject) {
+    constructor(private pepAddonService: PepAddonService, filterObjectList: FilterObject[], resourceList: Collection[], filterObject?: FilterObject) {
         this.fomoService = new FomoService(pepAddonService);
         this.filterObjectList = filterObjectList;
+        this.resources = resourceList;
         this.filterObject = filterObject ? filterObject : {
             Name: '',
             Resource: '',
@@ -35,26 +36,20 @@ export class FilterFormService {
         return this.filterObject;
     }
 
-    async getResources(): Promise<Collection[]> {
-        // this is called only once during init
-        return await this.fomoService.getResources();
-    }
-
-    private async setResourceOptions() {
-        this.resources = await this.getResources();
+    private setResourceOptions() {
         this.resourceOptions = this.resources.map((resource) => resource.Name);
     }
 
-    private async setFieldOptions() {
+    private setFieldOptions() {
         this.fieldOptions = this.filterObject.Resource ? Object.keys(this.chosenResource.Fields).filter((field) => this.chosenResource.Fields[field].Type === 'Resource') : [];
     }
 
     // same as setFieldOptions only excludes the field that was chosen as the previous field
-    private async setPreviousFieldOptions() {
+    private setPreviousFieldOptions() {
         this.previousFieldOptions = this.filterObject.Field ? this.fieldOptions.filter((field) => field !== this.filterObject.Field) : [];
     }
 
-    private async setPreviousFilterOptions() {
+    private setPreviousFilterOptions() {
         if (!this.filterObject.PreviousField) {
             this.previousFilterOptions = [];
             return;
@@ -69,43 +64,43 @@ export class FilterFormService {
     }
 
 
-    async init(): Promise<void> {
-        await this.setResourceOptions();
+    init(): void {
+        this.setResourceOptions();
         if (this.filterObject.Resource) {
             this.chosenResource = this.resources.find((resource) => resource.Name === this.filterObject.Resource);
-            await this.setFieldOptions();
+            this.setFieldOptions();
         }
         if (this.filterObject.Field) {
-            await this.setPreviousFieldOptions();
+            this.setPreviousFieldOptions();
         }
         if (this.filterObject.PreviousField) {
-            await this.setPreviousFilterOptions();
+            this.setPreviousFilterOptions();
         }
 
     }
 
     //#region setters
-    async setName(name: string) {
+    setName(name: string) {
         this.filterObject.Name = name;
     }
 
-    async setResource(resource: string) {
+    setResource(resource: string) {
         this.filterObject.Resource = resource;
         this.chosenResource = this.resources.find((resource) => resource.Name === this.filterObject.Resource);
         this.setField('');
-        await this.setFieldOptions();
+        this.setFieldOptions();
     }
 
-    async setField(field: string) {
+    setField(field: string) {
         this.filterObject.Field = field;
         this.setPreviousField('');
-        await this.setPreviousFieldOptions();
+        this.setPreviousFieldOptions();
     }
 
-    async setPreviousField(previousField: string) {
+    setPreviousField(previousField: string) {
         this.filterObject.PreviousField = previousField;
         this.filterObject.PreviousFilter = '';
-        await this.setPreviousFilterOptions();
+        this.setPreviousFilterOptions();
     }
 
     setPreviousFilter(previousFilter: string) {
