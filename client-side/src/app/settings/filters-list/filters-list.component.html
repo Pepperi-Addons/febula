@@ -1,21 +1,13 @@
-<pep-page-layout      >
-    <ng-container pep-top-area>
-        <pep-top-bar title="Manage a list of filters.">
-            <div header-start-content>
-                <!-- Add components you want after the title -->
-            </div>
-            <div header-end-content>
-                <pep-button value="Add Filter" styleType="strong" styleStateType="system" sizeType="md" classNames="s"
-                    [disabled]="false" iconName="number_plus" iconPosition="end" [visible]="true"
-                    (buttonClick)="buttonClick($event)"></pep-button>
-            </div>
-        </pep-top-bar>
-    </ng-container>
-
+<pep-page-layout>
     <ng-container pep-main-area>
         <pep-generic-list [showSearch]="true" title="Here you can view and edit your filters"
             [dataSource]="listDataSource" [uuidMapping]="'Key'" [actions]="actions" [showTopBar]="true"
             [selectionType]="'multi'" [inline]="false">
+            <ng-container right-buttons>
+                <pep-button value="{{'Add Filter' | translate}}" styleType="strong" styleStateType="system"
+                    sizeType="md" classNames="s" iconPosition="end" iconName="number_plus" [visible]="true"
+                    (buttonClick)="buttonClick($event)"></pep-button>
+            </ng-container>
         </pep-generic-list>
     </ng-container>
 </pep-page-layout>

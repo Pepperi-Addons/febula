@@ -20,7 +20,7 @@ export class FiltersListComponent implements OnInit {
     screenSize: PepScreenSizeType;
     fomoService: FomoService;
     filterObjectsMap: Map<string, FilterObject> = new Map<string, FilterObject>();
-    filterObjects: FilterObject[] = [];
+    filterObjects?: FilterObject[] = undefined;
 
 
     constructor(
@@ -36,7 +36,6 @@ export class FiltersListComponent implements OnInit {
             this.screenSize = size;
         });
         this.fomoService = new FomoService(this.pepAddonService);
-
     }
 
     ngOnInit() {
@@ -49,7 +48,7 @@ export class FiltersListComponent implements OnInit {
         config.data = new PepDialogData({
             content: FilterFormComponent,
         })
-        this.dialogService.openDialog(FilterFormComponent, data, config).afterClosed().subscribe((value) => {
+        this.dialogService.openDialog(FilterFormComponent, { ...data, filterObjectList: this.filterObjects }, config).afterClosed().subscribe((value) => {
             if (value) {
                 console.log(JSON.stringify(value));
                 callback(value);
@@ -68,22 +67,45 @@ export class FiltersListComponent implements OnInit {
     }
 
     updateFilterObjectsMap(filterObjects: FilterObject[]) {
-        this.filterObjectsMap.clear();
         filterObjects.forEach(filterObject => {
             this.filterObjectsMap.set(filterObject.Key, filterObject);
         });
     }
 
-    async updateFilterObjects(searchString: string) {
-        this.filterObjects = await this.fomoService.getFilterObjects(searchString);
-        this.updateFilterObjectsMap(this.filterObjects);
+    async updateFilterObjects() {
+        try {
+            this.filterObjects = await this.fomoService.getFilterObjects();
+            this.updateFilterObjectsMap(this.filterObjects);
+        }
+        catch (ex) {
+            console.error(`Error in updateFilterObjects: ${ex}`);
+            throw ex;
+        }
+    }
+
+    async getSearchedFilterObjects(searchText?: string): Promise<FilterObject[]> {
+        if (this.filterObjects === undefined) {
+            try {
+                await this.updateFilterObjects();
+            }
+            catch (ex) {
+                console.error(`Error in getSearchedFilterObjects: ${ex}`);
+                throw ex;
+            }
+        }
+        if (!searchText) {
+            return this.filterObjects;
+        }
+        return this.filterObjects.filter(filterObject => {
+            return filterObject.Name.toLowerCase().includes(searchText.toLowerCase());
+        });
     }
 
 
     getDataSource() {
         return {
             init: async (state) => {
-                await this.updateFilterObjects(state?.searchString);
+                const searchedFilterObjects = await this.getSearchedFilterObjects(state.searchString);
                 return {
                     dataView: {
                         Context: {
@@ -132,7 +154,7 @@ export class FiltersListComponent implements OnInit {
                             {
                                 FieldID: 'Locked',
                                 Type: 'Boolean',
-                                Title: 'Locked',
+                                Title: 'System',
                                 Mandatory: true,
                                 ReadOnly: true
                             }
@@ -161,13 +183,13 @@ export class FiltersListComponent implements OnInit {
                         FrozenColumnsCount: 0,
                         MinimumColumnWidth: 0
                     },
-                    items: this.filterObjects.map(filterObject => {
+                    items: searchedFilterObjects.map(filterObject => {
                         return {
                             ...filterObject,
                             Locked: this.isLocked(filterObject)
                         }
                     }),
-                    totalCount: this.filterObjects.length
+                    totalCount: searchedFilterObjects.length
                 }
             }
         } as IPepGenericListDataSource;

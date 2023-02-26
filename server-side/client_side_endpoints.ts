@@ -1,16 +1,16 @@
 import { Client, Request } from '@pepperi-addons/debug-server'
-import { Collection, PapiClient } from '@pepperi-addons/papi-sdk';
+import { AddonData, Collection, PapiClient } from '@pepperi-addons/papi-sdk';
 import { FilterObject } from '../shared/types';
 import { FilterObjectService } from './services/filter-object.service';
 import { FilterRuleService } from './services/filter-rule.service';
 
-export async function get_udcs(client: Client, request: Request): Promise<Collection[]> {
+export async function get_resources(client: Client, request: Request): Promise<AddonData[]> {
     // returns true if collection has at least 2 fields of type 'Resource'
-    const filterAtLeastTwoResources = (collection: Collection): boolean => {
-        if (collection.Fields) {
+    const filterAtLeastTwoResources = (resource: AddonData): boolean => {
+        if (resource.Fields) {
             let count = 0;
-            for (const field of Object.values(collection.Fields)) {
-                if (field.Type === 'Resource') {
+            for (const field of Object.values(resource.Fields)) {
+                if ((field as any).Type === 'Resource') {
                     count++;
                 }
             }
@@ -28,18 +28,18 @@ export async function get_udcs(client: Client, request: Request): Promise<Collec
             addonSecretKey: client.AddonSecretKey,
             actionUUID: client['ActionUUID']
         });
-        const udcs: Collection[] = await papiClient.userDefinedCollections.schemes.iter().toArray();
-        const filteredUdcs = udcs.filter(filterAtLeastTwoResources);
-        return filteredUdcs;
+        const resources: AddonData[] = await papiClient.resources.resource('resources').get({ page_size: -1 })
+        const filteredResources = resources.filter(filterAtLeastTwoResources);
+        return filteredResources;
     }
     catch (ex) {
-        console.error(`Error in get_udcs: ${ex}`);
+        console.error(`Error in get_resources: ${ex}`);
         throw new Error((ex as { message: string }).message);
     }
 }
 
 export async function get_filters_by_keys(client: Client, request: Request): Promise<FilterObject[]> {
-    const filterObjectService = new FilterObjectService(client, request.header['x-pepperi-ownerid'], request.header['x-pepperi-secretkey']);
+    const filterObjectService = new FilterObjectService(client);
     try {
         console.log(`start get_filters_by_keys request. body - ${JSON.stringify(request.body)}`);
         const filterObjectKeys = request.body.KeyList as string[];
@@ -55,7 +55,7 @@ export async function get_filters_by_keys(client: Client, request: Request): Pro
 
 
 export async function filters_delete(client: Client, request: Request) {
-    const filterObjectService = new FilterObjectService(client, request.header['x-pepperi-ownerid'], request.header['x-pepperi-secretkey']);
+    const filterObjectService = new FilterObjectService(client);
     try {
         if (request.method === 'POST') {
             console.log(`start delete_filters request. body - ${JSON.stringify(request.body)}`);
@@ -76,7 +76,7 @@ export async function filters_delete(client: Client, request: Request) {
 }
 
 export async function profile_filters_delete(client: Client, request: Request) {
-    const filterRuleService = new FilterRuleService(client, request.header['x-pepperi-ownerid'], request.header['x-pepperi-secretkey']);
+    const filterRuleService = new FilterRuleService(client);
     try {
         if (request.method === 'POST') {
             console.log(`start delete_profile_filters request. body - ${JSON.stringify(request.body)}`);

@@ -35,12 +35,27 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
         }
     }
 
+    async validateProfileFilterCombination(addonData: FilterRule): Promise<void> {
+        // validate that the combination of profile and filter is unique
+        const filterRules = await this.get({ where: `Resource like '${addonData.Resource}' and EmployeeType=${addonData.EmployeeType}` })
+        if (filterRules.length > 0) {
+            // check if the filter is the same by comparing the keys
+            const filterRule = filterRules[0];
+            if (filterRule.Key !== addonData.Key) {
+                throw new Error(`Validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nProfile and filter combination must be unique.`);
+            }
+        }
+    }
+
     async validateData(addonData: FilterRule): Promise<void> {
         // validate schema
         await this.validateSchema(addonData);
 
         // validate referenced key
         await this.validateReferencedKey(addonData);
+
+        // validate profile and filter combination
+        await this.validateProfileFilterCombination(addonData);
     }
 
 }
