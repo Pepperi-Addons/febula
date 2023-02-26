@@ -8,6 +8,7 @@ import { FomoService } from "src/services/fomo.service";
 import { FilterObject, FilterRule } from "../../../../../shared/types";
 import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
 import { ProfileFiltersFormComponent } from "../profile-filters-form/profile-filters-form.component";
+import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
 
 
 @Component({
@@ -21,6 +22,8 @@ export class ProfileFiltersListComponent implements OnInit {
     fomoService: FomoService;
     filterRulesMap: Map<string, FilterRule> = new Map<string, FilterRule>();
     filterRules?: FilterRule[] = undefined;
+    filterObjects?: FilterObject[] = undefined;
+    resources?: Collection[] = undefined;
     filterKeyToNameMap: Map<string, string> = new Map<string, string>();
 
 
@@ -49,7 +52,7 @@ export class ProfileFiltersListComponent implements OnInit {
         config.data = new PepDialogData({
             content: ProfileFiltersFormComponent,
         })
-        this.dialogService.openDialog(ProfileFiltersFormComponent, { ...data, filterRulesList: this.filterRules }, config).afterClosed().subscribe((value) => {
+        this.dialogService.openDialog(ProfileFiltersFormComponent, { ...data, filterRuleList: this.filterRules, filterObjectList: this.filterObjects, resourceList: this.resources }, config).afterClosed().subscribe((value) => {
             if (value) {
                 console.log(JSON.stringify(value));
                 callback(value);
@@ -111,15 +114,41 @@ export class ProfileFiltersListComponent implements OnInit {
         }
     }
 
+    async updateResources() {
+        try {
+            this.resources = await this.fomoService.getResources();
+        }
+        catch (ex) {
+            console.error(`updateResources: ${ex}`);
+            throw ex;
+        }
+    }
+
+    async updateFilterObjects() {
+        try {
+            this.filterObjects = await this.fomoService.getFilterObjects();
+        }
+        catch (ex) {
+            console.error(`updateFilterObjects: ${ex}`);
+            throw ex;
+        }
+    }
+
     async getSearchedFilterRules(searchText?: string): Promise<FilterRule[]> {
-        if (this.filterRules === undefined) {
-            try {
+        try {
+            if (this.filterRules === undefined) {
                 await this.updateFilterRules();
             }
-            catch (ex) {
-                console.error(`Error in getSearchedFilterObjects: ${ex}`);
-                throw ex;
+            if (this.filterObjects === undefined) {
+                await this.updateFilterObjects();
             }
+            if (this.resources === undefined) {
+                await this.updateResources();
+            }
+        }
+        catch (ex) {
+            console.error(`Error in getSearchedFilterObjects: ${ex}`);
+            throw ex;
         }
         if (!searchText) {
             return this.filterRules;

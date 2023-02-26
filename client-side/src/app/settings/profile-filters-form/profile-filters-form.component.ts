@@ -5,8 +5,9 @@ import { TranslateService } from '@ngx-translate/core';
 import { IPepGenericFormDataView, IPepGenericFormValueChange } from "@pepperi-addons/ngx-composite-lib/generic-form";
 import { PepAddonService, PepLayoutService, PepScreenSizeType } from '@pepperi-addons/ngx-lib';
 import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
-import { FilterFormService } from "src/services/filter-form.service";
-import { FilterRule } from "../../../../../shared/types";
+import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
+import { ProfileFiltersFormService } from "src/services/profile-filters-form.service";
+import { FilterObject, FilterRule } from "../../../../../shared/types";
 
 @Component({
     selector: 'profile-filters-form',
@@ -21,8 +22,7 @@ export class ProfileFiltersFormComponent implements OnInit {
     mode: 'Edit' | 'Add'
     screenSize: PepScreenSizeType;
     profileFiltersTitle: string;
-    //TODO future task
-    //profileFiltersFormService: FilterFormService;
+    profileFiltersFormService: ProfileFiltersFormService;
     saveDisabled: boolean = false;
 
     constructor(
@@ -33,15 +33,14 @@ export class ProfileFiltersFormComponent implements OnInit {
         public router: Router,
         public activatedRoute: ActivatedRoute,
         public pepAddonService: PepAddonService,
-        @Inject(MAT_DIALOG_DATA) public incoming?: { filterRuleList:FilterRule[], filterRule: FilterRule }
+        @Inject(MAT_DIALOG_DATA) public incoming: { filterObjectList: FilterObject[], filterRuleList: FilterRule[], resourceList: Collection[], filterRule?: FilterRule }
     ) {
         this.layoutService.onResize$.subscribe(size => {
             this.screenSize = size;
         });
 
         this.profileFiltersTitle = incoming?.filterRule ? `Edit Profile-Filter` : `Create new Profile-Filter`;
-        //TODO future task
-        //this.filterFormService = new FilterFormService(this.pepAddonService, incoming?.filterObject);
+        this.profileFiltersFormService = new ProfileFiltersFormService(this.pepAddonService, incoming.filterRuleList, incoming.filterObjectList, incoming.resourceList, incoming.filterRule);
     }
 
     dataSource: FilterRule;
@@ -49,70 +48,36 @@ export class ProfileFiltersFormComponent implements OnInit {
 
 
     updateDataView() {
-        //TODO future task
-        //this.dataView = this.filterFormService.getDataView();
-        return {
-            "Type": "Form",
-            "Hidden": false,
-            "Columns": [],
-            "Context": {
-                "Object": {
-                    "Resource": "transactions",
-                    "InternalID": 0,
-                    "Name": "Object Name"
-                },
-                "Name": "Context Name",
-                "ScreenSize": "Tablet",
-                "Profile": {
-                    "InternalID": 0,
-                    "Name": "Profile Name"
-                }
-            },
-            "Fields": [
-            ],
-            "Rows": []
-        }
+        this.dataView = this.profileFiltersFormService.getDataView();
     }
 
     updateDataSource() {
-        //TODO future task
-        //this.dataSource = this.filterFormService.getFilterObject();
+        this.dataSource = this.profileFiltersFormService.getFilterRule();
         return {}
     }
 
     async ngOnInit() {
-        //TODO future task
-        //await this.filterFormService.init();
+        await this.profileFiltersFormService.init();
         this.updateDataSource();
         this.updateDataView();
     }
 
 
-    async valueChange($event: IPepGenericFormValueChange) {
+    valueChange($event: IPepGenericFormValueChange) {
         console.log($event);
-        // switch case for ApiName
-        //TODO future task
-        // switch ($event.ApiName) {
-        //     case 'Name':
-        //         await this.filterFormService.setName($event.Value);
-        //         break;
-        //     case 'Resource':
-        //         await this.filterFormService.setResource($event.Value);
-        //         this.updateDataView();
-        //         break;
-        //     case 'Field':
-        //         await this.filterFormService.setField($event.Value);
-        //         this.updateDataView();
-        //         break;
-        //     case 'PreviousField':
-        //         await this.filterFormService.setPreviousField($event.Value);
-        //         this.updateDataView();
-        //         break;
-        //     case 'PreviousFilter':
-        //         await this.filterFormService.setPreviousFilter($event.Value);
-        //         this.updateDataView();
-        //         break;
-        // }
+        switch ($event.ApiName) {
+            case 'Profile':
+                this.profileFiltersFormService.setProfile($event.Value);
+                break;
+            case 'Resource':
+                this.profileFiltersFormService.setResource($event.Value);
+                this.updateDataView();
+                break;
+            case 'Filter':
+                this.profileFiltersFormService.setFilter($event.Value);
+                this.updateDataView();
+                break;
+        }
     }
 
     close(event: any) {
@@ -124,8 +89,7 @@ export class ProfileFiltersFormComponent implements OnInit {
     }
 
     async saveClicked() {
-        //TODO future task
-        //const result = await this.filterFormService.save();
+        const result = await this.profileFiltersFormService.save();
         this.close(undefined);
     }
 
