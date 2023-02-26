@@ -146,7 +146,7 @@ export class ProfileFiltersFormService {
         return this.stringArrayToOptionsArray(this.filterOptions);
     }
 
-    async save(): Promise<FilterObject> {
+    async save(): Promise<FilterRule> {
         return await this.fomoService.upsertFilterRule(this.filterRule);
     }
 

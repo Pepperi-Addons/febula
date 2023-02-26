@@ -1,7 +1,6 @@
 import { PepAddonService } from "@pepperi-addons/ngx-lib";
 import { config } from "../app/app.config"
 import { FilterObject, FilterRule } from "../../../shared/types";
-import { Promise } from "bluebird";
 import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
 
 export class FomoService {
