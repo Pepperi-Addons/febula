@@ -80,7 +80,7 @@ export class FomoService {
 
     async deleteFilterObjects(filterObjectKeys: string[]): Promise<any> {
         try {
-            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'client_side_endpoints', 'filters_delete', { Keys: filterObjectKeys }).toPromise();
+            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'api', 'filters_delete', { Keys: filterObjectKeys }).toPromise();
             return postResults;
         }
         catch (ex) {
@@ -92,7 +92,7 @@ export class FomoService {
 
     async deleteFilterRules(filterRuleKeys: string[]): Promise<any> {
         try {
-            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'client_side_endpoints', 'profile_filters_delete', { Keys: filterRuleKeys }).toPromise();
+            const postResults = await this.pepAddonService.postAddonApiCall(config.AddonUUID, 'api', 'profile_filters_delete', { Keys: filterRuleKeys }).toPromise();
             return postResults;
         }
         catch (ex) {

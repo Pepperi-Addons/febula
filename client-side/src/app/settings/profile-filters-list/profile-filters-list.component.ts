@@ -46,7 +46,8 @@ export class ProfileFiltersListComponent implements OnInit {
     }
 
 
-    private async openAttachmentDialog(callback: (value: any) => void, data?: { profileFilter: FilterRule }) {
+    private async openAttachmentDialog(callback: (value: any) => void, data?: { filterRule: FilterRule }) {
+        this.listDataSource = this.getDataSource(true); // update all different resources so form will have the latest data
         const config = this.dialogService.getDialogConfig({}, 'large');
 
         config.data = new PepDialogData({
@@ -55,6 +56,7 @@ export class ProfileFiltersListComponent implements OnInit {
         this.dialogService.openDialog(ProfileFiltersFormComponent, { ...data, filterRuleList: this.filterRules, filterObjectList: this.filterObjects, resourceList: this.resources }, config).afterClosed().subscribe((value) => {
             if (value) {
                 console.log(JSON.stringify(value));
+                this.listDataSource = this.getDataSource(true);
                 callback(value);
             }
         });
@@ -106,7 +108,8 @@ export class ProfileFiltersListComponent implements OnInit {
             this.filterRules = await this.fomoService.getFilterRules();
             this.updateFilterRulesMap(this.filterRules);
             const keyList = this.filterRules.map(filterRule => filterRule.Filter);
-            await this.updateFilterObjectNames(keyList);
+            const uniqueKeys = Array.from(new Set(keyList));
+            await this.updateFilterObjectNames(uniqueKeys);
         }
         catch (ex) {
             console.error(`updateFilterRules: ${ex}`);
@@ -134,12 +137,12 @@ export class ProfileFiltersListComponent implements OnInit {
         }
     }
 
-    async getSearchedFilterRules(searchText?: string): Promise<FilterRule[]> {
+    async getSearchedFilterRules(force: boolean, searchText?: string): Promise<FilterRule[]> {
         try {
-            if (this.filterRules === undefined) {
+            if (this.filterRules === undefined || force) {
                 await this.updateFilterRules();
             }
-            if (this.filterObjects === undefined) {
+            if (this.filterObjects === undefined || force) {
                 await this.updateFilterObjects();
             }
             if (this.resources === undefined) {
@@ -158,10 +161,10 @@ export class ProfileFiltersListComponent implements OnInit {
         });
     }
 
-    getDataSource() {
+    getDataSource(force: boolean = false) {
         return {
             init: async (state) => {
-                const searchedFilterRules = await this.getSearchedFilterRules(state.searchString);
+                const searchedFilterRules = await this.getSearchedFilterRules(force, state.searchString);
                 return {
                     dataView: {
                         Context: {
@@ -229,7 +232,7 @@ export class ProfileFiltersListComponent implements OnInit {
             const filterRule = this.filterRulesMap.get(filterRuleKey);
             this.openAttachmentDialog((value) => {
                 console.log(`callback from dialog: ${JSON.stringify(value)}`);
-            }, { profileFilter: filterRule });
+            }, { filterRule: filterRule });
         }
     }
 
@@ -238,7 +241,7 @@ export class ProfileFiltersListComponent implements OnInit {
         handler: async (data) => {
             const filterRuleKeys = data?.rows;
             await this.fomoService.deleteFilterRules(filterRuleKeys);
-            this.listDataSource = this.getDataSource();
+            this.listDataSource = this.getDataSource(true);
         }
     }
 

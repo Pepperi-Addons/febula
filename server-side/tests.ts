@@ -9,6 +9,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { FilterObjectTestService } from './services/test-services/filter-object-test.service';
 import { FilterRuleTestService } from './services/test-services/filter-rule-test.service';
+import { AddonDataScheme, Collection, PapiClient } from '@pepperi-addons/papi-sdk';
 chai.use(chaiAsPromised);
 function createMocha(client: Client, cb: (res) => void) {
     const isLocal = false; //client ? client.AssetsBaseUrl.includes('/localhost:') : true;
@@ -46,6 +47,13 @@ export async function fomo_tests(client: Client, request: Request) {
     const root = mocha.suite;
     const debug = request.body['Debug'] ?? false;
     let context: Mocha.Suite | undefined = root;
+    const papiClient = new PapiClient({
+        baseURL: client.BaseURL,
+        token: client.OAuthAccessToken,
+        addonUUID: client.AddonUUID,
+        addonSecretKey: client.AddonSecretKey,
+        actionUUID: client.ActionUUID
+    });
     const describe = (name: string, fn: () => any) => {
         const suite = new Mocha.Suite(name);
         context?.addSuite(suite);
@@ -69,6 +77,20 @@ export async function fomo_tests(client: Client, request: Request) {
         }
 
         describe('Filter Object Tests', () => {
+
+            describe('init resource', () => {
+                let testResource: AddonDataScheme;
+                it('create test resource', async () => {
+                    testResource = await filterObjectService.getTestResource();
+                    await papiClient.addons.data.schemes.post(testResource);
+                });
+                it('make sure test resource exists', async () => {
+                    const resources: Collection[] = await papiClient.resources.resource('resources').get({ page_size: -1 }) as Collection[];
+                    const foundTestResource = resources.find(r => r.Name === testResource.Name);
+                    expect(foundTestResource).to.be.an('object');
+                });
+            });
+
 
             describe('Basic CRUD', () => {
                 let filterObject: FilterObject;
@@ -133,7 +155,7 @@ export async function fomo_tests(client: Client, request: Request) {
                 });
                 it('Insert with PreviousField and without PreviousFilter', async () => {
                     const filterObject = await filterObjectService.createObject();
-                    filterObject.PreviousField = 'PreviousField';
+                    filterObject.PreviousField = filterObjectService.testPreviousFieldName;
                     await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
                 });
                 it('Insert with PreviousFilter and without PreviousField', async () => {
@@ -148,8 +170,8 @@ export async function fomo_tests(client: Client, request: Request) {
                 it('Insert with PreviousFilter and PreviousField but PreviousFilter is not found', async () => {
                     const filterObject = await filterObjectService.createObject();
                     filterObject.PreviousFilter = 'PreviousFilter';
-                    filterObject.PreviousField = 'PreviousField';
-                    await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Reference validation failed');
+                    filterObject.PreviousField = filterObjectService.testPreviousFieldName;
+                    await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('PreviousFilter validation failed');
                 });
                 it('Clean', async () => {
                     await cleanup();
@@ -224,7 +246,7 @@ export async function fomo_tests(client: Client, request: Request) {
                 it('Insert with filter that is not a valid filter', async () => {
                     const filterRule = await filterRuleService.createObject();
                     filterRule.Filter = 'InvalidFilter';
-                    await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Reference validation failed');
+                    await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Filter validation failed');
                 });
                 it('Clean', async () => {
                     await cleanup();

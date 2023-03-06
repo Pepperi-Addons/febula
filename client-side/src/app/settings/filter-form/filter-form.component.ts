@@ -15,15 +15,27 @@ import { FilterObject } from "../../../../../shared/types";
     styleUrls: ['./filter-form.component.scss']
 })
 export class FilterFormComponent implements OnInit {
+
     formValidationChange($event: boolean) {
-        this.saveDisabled = !$event;
+        //TODO there is a bug which causes the form to be not valid when it is valid
+        //this.saveDisabled = !$event;
+    }
+
+    isFilterValid(filter: FilterObject): boolean {
+
+        const isValidString = (str: string) => {
+            return str !== undefined && str.length > 0;
+        }
+
+        const valid: boolean = isValidString(filter.Name) && isValidString(filter.Resource) && isValidString(filter.Field) && isValidString(filter.PreviousField) && isValidString(filter.PreviousFilter);
+        return valid;
     }
 
     mode: 'Edit' | 'Add'
     screenSize: PepScreenSizeType;
     filterTitle: string;
     filterFormService: FilterFormService;
-    saveDisabled: boolean = false;
+    saveDisabled: boolean = true;
 
     constructor(
         public layoutService: PepLayoutService,
@@ -80,11 +92,15 @@ export class FilterFormComponent implements OnInit {
                 this.filterFormService.setPreviousField($event.Value);
                 this.updateDataView();
                 break;
-            case 'PreviousFilter':
+            case 'PreviousFilterName':
                 this.filterFormService.setPreviousFilter($event.Value);
                 this.updateDataView();
                 break;
         }
+
+        //TODO this should not be here but there is a bug in validation. to be removed when bug is fixed
+        const filterAfterChange = this.filterFormService.getFilterObject();
+        this.saveDisabled = !this.isFilterValid(filterAfterChange);
     }
 
     close(event: any) {
