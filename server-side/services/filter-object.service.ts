@@ -20,6 +20,7 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
     }
 
     // returns true if collection has at least 2 fields of type 'Resource'
+    // currently not in use
     private filterAtLeastTwoResources = (resource: Collection): boolean => {
         if (resource.Fields) {
             let count = 0;
@@ -33,11 +34,11 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
         return false;
     }
 
-    // setup resources array with all resources that have at least 2 fields of type 'Resource'
+    // setup resources array with all resources
     private initResources = async (): Promise<void> => {
         if (!this.resources) {
             try {
-                this.resources = (await this.getResources()).filter(this.filterAtLeastTwoResources);
+                this.resources = await this.getResources()
             }
             catch (ex) {
                 console.error(`Error in initResources: ${ex}`);
@@ -50,7 +51,7 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
     private isFieldValid(addonData: FilterObject, fieldName: string): void {
         // make sure chosenResource is defined
         if (!this.chosenResource) {
-            throw new Error(`Field validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)} fieldName: ${fieldName}\nResource: ${addonData.Resource} not found, or doesn't have at least 2 fields of type 'Resource'.`);
+            throw new Error(`Field validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)} fieldName: ${fieldName}\nResource: ${addonData.Resource} not found.`);
         }
 
         // check if the chosen field exist in the chosen resource
@@ -59,9 +60,9 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
             throw new Error(`Field validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)} fieldName: ${fieldName}\nField: ${fieldName} not found in resource: ${addonData.Resource}.`);
         }
 
-        // check if the chosen field type is 'Resource'
-        if ((field as any).Type !== 'Resource') {
-            throw new Error(`Field validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)} fieldName: ${fieldName}\nField: ${fieldName} in resource: ${addonData.Resource} is not of type 'Resource'.`);
+        // the chosen field should either be of type 'Resource' or the field name should be 'Key'
+        if ((field as any).Type !== 'Resource' && fieldName !== 'Key') {
+            throw new Error(`Field validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)} fieldName: ${fieldName}\nField: ${fieldName} in resource: ${addonData.Resource} should either be of type 'Resource' or the field name should be 'Key'.`);
         }
     }
 
@@ -93,7 +94,7 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
         // check if the chosen resource exist in the resources array
         const resource = this.resources!.find((resource) => resource.Name === addonData.Resource);
         if (!resource) {
-            throw new Error(`Resource validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nResource: ${addonData.Resource} not found, or doesn't have at least 2 fields of type 'Resource'.`);
+            throw new Error(`Resource validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nResource: ${addonData.Resource} not found.`);
         }
         this.chosenResource = resource;
     }
