@@ -1,12 +1,11 @@
 <pep-page-layout>
     <ng-container pep-main-area>
-        <pep-generic-list [showSearch]="true" title="Here you can view and edit your profile-filters"
-            [dataSource]="listDataSource" [uuidMapping]="'Key'" [actions]="actions" [showTopBar]="true"
-            [selectionType]="'multi'" [inline]="false">
+        <pep-generic-list [showSearch]="true" title="Profile-Filters" [dataSource]="listDataSource"
+            [uuidMapping]="'Key'" [actions]="actions" [showTopBar]="true" [selectionType]="'multi'" [inline]="false"
+            [noDataFoundMsg]="'No Data Found'" [description]="'Define rules for resource sync filter per profile.'">
             <ng-container right-buttons>
-                <pep-button value="{{'Add Profile-Filter' | translate}}" styleType="strong" styleStateType="system"
-                    sizeType="md" classNames="s" iconPosition="end" iconName="number_plus" [visible]="true"
-                    (buttonClick)="buttonClick($event)"></pep-button>
+                <pep-button value="{{'Add' | translate}}" styleType="strong" styleStateType="system" sizeType="md"
+                    classNames="s" [visible]="true" (buttonClick)="buttonClick($event)"></pep-button>
             </ng-container>
         </pep-generic-list>
     </ng-container>

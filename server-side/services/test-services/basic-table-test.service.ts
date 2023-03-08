@@ -1,10 +1,11 @@
 import { Client } from "@pepperi-addons/debug-server/dist";
-import { AddonData, PapiClient, FindOptions } from "@pepperi-addons/papi-sdk";
+import { AddonData, PapiClient, FindOptions, Collection } from "@pepperi-addons/papi-sdk";
 import { Promise } from "bluebird";
 
 
 export abstract class BasicTableTestService<T extends AddonData>{
     papiClient: PapiClient;
+    testResourceName = 'test_resource';
     abstract functionEndpointSuffix: string;
     upsertedRecordsKeys: string[] = [];
     MAX_PARALLEL = 10;
@@ -70,7 +71,7 @@ export abstract class BasicTableTestService<T extends AddonData>{
             return upsertResult;
         }
         catch (ex) {
-            console.error(`Failed to upsert data to ${this.functionEndpointSuffix} table with error: ${JSON.stringify(ex)}`);
+            console.error(`Failed to upsert data to ${this.functionEndpointSuffix} table with error: ${ex}`);
             throw ex;
         }
     }
@@ -100,7 +101,7 @@ export abstract class BasicTableTestService<T extends AddonData>{
             return deleteResult;
         }
         catch (ex) {
-            console.error(`Failed to delete data from ${this.functionEndpointSuffix} table with error: ${JSON.stringify(ex)}`);
+            console.error(`Failed to delete data from ${this.functionEndpointSuffix} table with error: ${ex}`);
             throw ex;
         }
     }
@@ -112,7 +113,7 @@ export abstract class BasicTableTestService<T extends AddonData>{
             return results;
         }
         catch (ex) {
-            console.error(`Failed to clean up ${this.functionEndpointSuffix} table with error: ${JSON.stringify(ex)}`);
+            console.error(`Failed to clean up ${this.functionEndpointSuffix} table with error: ${ex}`);
             throw ex;
         }
     }

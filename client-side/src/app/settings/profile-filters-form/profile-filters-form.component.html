@@ -4,14 +4,19 @@
             <div header-end-content>
                 <pep-button class="pep-spacing-element" [value]="'Cancel' | translate"
                     (buttonClick)="cancelClicked()"></pep-button>
-                <pep-button class="pep-spacing-element" [value]="'Save' | translate" [disabled]="saveDisabled" [styleType]="'strong'"
-                    (buttonClick)="saveClicked()"></pep-button>
+                <pep-button class="pep-spacing-element" [value]="'Save' | translate" [disabled]="saveDisabled"
+                    [styleType]="'strong'" (buttonClick)="saveClicked()"></pep-button>
             </div>
         </pep-top-bar>
+        <div class="page-description" style="padding-left:5px">
+            <h5>{{ 'Define the filter object of a resource for a profile.' | translate }}</h5>
+        </div>
     </ng-container>
 
     <ng-container pep-main-area>
-        <pep-generic-form #profileFiltersForm [dataSource]="dataSource" (formValidationChange)="formValidationChange($event)" [dataView]="dataView" [isLocked]="false" [inline]="false"
-            [showTopBar]="false" [addPadding]="false" (valueChange)="valueChange($event)"></pep-generic-form>
+        <pep-generic-form #profileFiltersForm [dataSource]="dataSource"
+            (formValidationChange)="formValidationChange($event)" [dataView]="dataView" [isLocked]="false"
+            [inline]="false" [showTopBar]="false" [addPadding]="false"
+            (valueChange)="valueChange($event)"></pep-generic-form>
     </ng-container>
 </pep-page-layout>

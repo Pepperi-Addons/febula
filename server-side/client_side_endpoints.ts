@@ -4,33 +4,11 @@ import { FilterObject } from '../shared/types';
 import { FilterObjectService } from './services/filter-object.service';
 import { FilterRuleService } from './services/filter-rule.service';
 
-export async function get_resources(client: Client, request: Request): Promise<AddonData[]> {
-    // returns true if collection has at least 2 fields of type 'Resource'
-    const filterAtLeastTwoResources = (resource: AddonData): boolean => {
-        if (resource.Fields) {
-            let count = 0;
-            for (const field of Object.values(resource.Fields)) {
-                if ((field as any).Type === 'Resource') {
-                    count++;
-                }
-            }
-            return count >= 2;
-        }
-        return false;
-    }
-
-
+export async function get_resources(client: Client, request: Request): Promise<Collection[]> {
+    const filterObjectService = new FilterObjectService(client);
     try {
-        const papiClient = new PapiClient({
-            baseURL: client.BaseURL,
-            token: client.OAuthAccessToken,
-            addonUUID: client.AddonUUID,
-            addonSecretKey: client.AddonSecretKey,
-            actionUUID: client['ActionUUID']
-        });
-        const resources: AddonData[] = await papiClient.resources.resource('resources').get({ page_size: -1 })
-        const filteredResources = resources.filter(filterAtLeastTwoResources);
-        return filteredResources;
+        const resources: Collection[] = await filterObjectService.getResources();
+        return resources;
     }
     catch (ex) {
         console.error(`Error in get_resources: ${ex}`);

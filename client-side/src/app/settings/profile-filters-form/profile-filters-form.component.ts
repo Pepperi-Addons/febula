@@ -16,14 +16,26 @@ import { FilterObject, FilterRule } from "../../../../../shared/types";
 })
 export class ProfileFiltersFormComponent implements OnInit {
     formValidationChange($event: boolean) {
-        this.saveDisabled = !$event;
+        //TODO there is a bug which causes the form to be not valid when it is valid
+        //this.saveDisabled = !$event;
     }
+
+    isProfileFilterValid(profileFilter: FilterRule): boolean {
+
+        const isValidString = (str: string) => {
+            return str !== undefined && str.length > 0;
+        }
+
+        const valid: boolean = profileFilter.EmployeeType !== undefined && isValidString(profileFilter.Resource) && isValidString(profileFilter.Filter);
+        return valid;
+    }
+
 
     mode: 'Edit' | 'Add'
     screenSize: PepScreenSizeType;
     profileFiltersTitle: string;
     profileFiltersFormService: ProfileFiltersFormService;
-    saveDisabled: boolean = false;
+    saveDisabled: boolean = true;
 
     constructor(
         public layoutService: PepLayoutService,
@@ -38,7 +50,6 @@ export class ProfileFiltersFormComponent implements OnInit {
         this.layoutService.onResize$.subscribe(size => {
             this.screenSize = size;
         });
-
         this.profileFiltersTitle = incoming?.filterRule ? `Edit Profile-Filter` : `Create new Profile-Filter`;
         this.profileFiltersFormService = new ProfileFiltersFormService(this.pepAddonService, incoming.filterRuleList, incoming.filterObjectList, incoming.resourceList, incoming.filterRule);
     }
@@ -68,16 +79,24 @@ export class ProfileFiltersFormComponent implements OnInit {
         switch ($event.ApiName) {
             case 'Profile':
                 this.profileFiltersFormService.setProfile($event.Value);
+                this.updateDataView();
+                this.updateDataSource();
                 break;
             case 'Resource':
                 this.profileFiltersFormService.setResource($event.Value);
                 this.updateDataView();
+                this.updateDataSource();
                 break;
-            case 'Filter':
+            case 'FilterName':
                 this.profileFiltersFormService.setFilter($event.Value);
                 this.updateDataView();
+                this.updateDataSource();
                 break;
         }
+
+        //TODO this should not be here but there is a bug in validation. to be removed when bug is fixed
+        const profileFilterAfterChange = this.profileFiltersFormService.getFilterRule();
+        this.saveDisabled = !this.isProfileFilterValid(profileFilterAfterChange);
     }
 
     close(event: any) {
@@ -90,7 +109,7 @@ export class ProfileFiltersFormComponent implements OnInit {
 
     async saveClicked() {
         const result = await this.profileFiltersFormService.save();
-        this.close(undefined);
+        this.close(result);
     }
 
     cancelClicked() {

@@ -83,7 +83,19 @@ export class ProfileFiltersFormService {
         const filterByResource = (filterObject: FilterObject) => {
             return filterObject.Resource === this.chosenResource.Name;
         }
-        this.filterOptions = this.filterRule.Resource ? this.filterObjectList.filter((filterObject) => filterByResource(filterObject)).map((filterObject) => filterObject.Name) : [];
+
+        // predicate that takes a filter object and returns true only if its "Field" field is a resource field that points to the chosen resource. However, if the Field=Key, it should be considered as a reference to the resource itself
+        const filterByResourceField = (filterObject: FilterObject) => {
+            const field = filterObject.Field;
+            const resource = this.resources.find((resource) => resource.Name === filterObject.Resource);
+            return field === "Key" ?
+
+                filterObject.Resource === this.chosenResource.Name :
+
+                resource && resource.Fields && Object.keys(resource.Fields).some((fieldKey) => fieldKey === field && resource.Fields[fieldKey].Type === 'Resource' && resource.Fields[fieldKey].Resource === this.chosenResource.Name);
+        }
+
+        this.filterOptions = this.filterRule.Resource ? this.filterObjectList.filter((filterObject) => filterByResourceField(filterObject)).map((filterObject) => filterObject.Name) : [];
     }
 
     init(): void {
@@ -112,7 +124,9 @@ export class ProfileFiltersFormService {
     }
 
     setFilter(filter: string) {
-        this.filterRule.Filter = filter;
+        const chosenFilterObject = this.filterObjectList.find((filterObject) => filterObject.Name === filter);
+        this.filterRule.Filter = chosenFilterObject ? chosenFilterObject.Key : '';
+        this.filterRule.FilterName = chosenFilterObject ? chosenFilterObject.Name : '';
     }
     // #endregion
 
@@ -159,7 +173,7 @@ export class ProfileFiltersFormService {
                 "AdditionalProps": { "emptyOption": false },
                 "Title": "Profile",
                 "Mandatory": true,
-                "ReadOnly": false,
+                "ReadOnly": this.mode === 'Edit',
                 "Layout": {
                     "Origin": {
                         "X": 0,
@@ -186,7 +200,7 @@ export class ProfileFiltersFormService {
                 "AdditionalProps": { "emptyOption": false },
                 "Title": "Resource",
                 "Mandatory": true,
-                "ReadOnly": false,
+                "ReadOnly": this.mode === 'Edit',
                 "Layout": {
                     "Origin": {
                         "X": 0,
@@ -200,7 +214,7 @@ export class ProfileFiltersFormService {
             } as BaseFormDataViewField;
 
         const filterField: BaseFormDataViewField = {
-            "FieldID": "Filter",
+            "FieldID": "FilterName",
             "Type": "ComboBox",
             "OptionalValues": this.getFilterOptions(),
             "AdditionalProps": { "emptyOption": false },

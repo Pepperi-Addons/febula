@@ -21,7 +21,7 @@ export class FilterFormService {
     constructor(private pepAddonService: PepAddonService, filterObjectList: FilterObject[], resourceList: Collection[], filterObject?: FilterObject) {
         this.fomoService = new FomoService(pepAddonService);
         this.filterObjectList = filterObjectList;
-        this.resources = resourceList;
+        this.resources = resourceList.filter(this.filterAtLeastTwoResources);
         this.filterObject = filterObject ? filterObject : {
             Name: '',
             Resource: '',
@@ -32,8 +32,22 @@ export class FilterFormService {
         this.mode = filterObject ? 'Edit' : 'Add';
     }
 
+    // returns true if collection has at least 2 fields of type 'Resource'
+    private filterAtLeastTwoResources = (resource: Collection): boolean => {
+        if (resource.Fields) {
+            let count = 0;
+            for (const field of Object.values(resource.Fields)) {
+                if ((field as any).Type === 'Resource') {
+                    count++;
+                }
+            }
+            return count >= 2;
+        }
+        return false;
+    }
+
     getFilterObject(): FilterObject {
-        return this.filterObject;
+        return this.filterObject
     }
 
     private setResourceOptions() {
@@ -100,12 +114,14 @@ export class FilterFormService {
     setPreviousField(previousField: string) {
         this.filterObject.PreviousField = previousField;
         this.filterObject.PreviousFilter = '';
+        this.filterObject.PreviousFilterName = '';
         this.setPreviousFilterOptions();
     }
 
     setPreviousFilter(previousFilter: string) {
         const previousFilterObject = this.previousFilters.find((filter) => filter.Name === previousFilter);
         this.filterObject.PreviousFilter = previousFilterObject ? previousFilterObject.Key : '';
+        this.filterObject.PreviousFilterName = previousFilterObject ? previousFilterObject.Name : '';
     }
     // #endregion
 
@@ -275,7 +291,7 @@ export class FilterFormService {
         } as BaseFormDataViewField;
 
         const previousFilterField: BaseFormDataViewField = {
-            "FieldID": "PreviousFilter",
+            "FieldID": "PreviousFilterName",
             "Type": "ComboBox",
             "OptionalValues": this.getPreviousFilterOptions(),
             "AdditionalProps": { "emptyOption": false },

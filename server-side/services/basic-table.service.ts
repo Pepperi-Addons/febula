@@ -1,5 +1,5 @@
 import { Client } from "@pepperi-addons/debug-server/dist";
-import { AddonData, PapiClient, AddonDataScheme, FindOptions } from "@pepperi-addons/papi-sdk";
+import { AddonData, PapiClient, AddonDataScheme, FindOptions, Collection, SearchData } from "@pepperi-addons/papi-sdk";
 import { v4 as uuid } from "uuid";
 import { Validator } from "jsonschema";
 import { Promise } from "bluebird";
@@ -18,6 +18,17 @@ export abstract class BasicTableService<T extends AddonData>{
             addonSecretKey: client.AddonSecretKey,
             actionUUID: client.ActionUUID
         });
+    }
+
+    async getResources(): Promise<Collection[]> {
+        try {
+            const resources: AddonData[] = await this.papiClient.resources.resource('resources').get({ page_size: -1 })
+            return resources as Collection[];
+        }
+        catch (ex) {
+            console.error(`Error in get_resources: ${ex}`);
+            throw new Error((ex as { message: string }).message);
+        }
     }
 
     getOwnerPapiClient(passSecretKey: boolean = false): PapiClient {
@@ -46,7 +57,7 @@ export abstract class BasicTableService<T extends AddonData>{
             return await this.papiClient.addons.data.schemes.post(this.schema);
         }
         catch (ex) {
-            console.error(`Failed to create schema ${this.schemaName} with error: ${JSON.stringify(ex)}`);
+            console.error(`Failed to create schema ${this.schemaName} with error: ${ex}`);
             throw ex;
         }
     }
@@ -58,7 +69,7 @@ export abstract class BasicTableService<T extends AddonData>{
             return await papiClient.addons.data.uuid(this.client.AddonUUID).table(this.schemaName).upsert(addonData);
         }
         catch (ex) {
-            console.error(`Failed to upsert data to ${this.schemaName} table with error: ${JSON.stringify(ex)}`);
+            console.error(`Failed to upsert data to ${this.schemaName} table with error: ${ex}`);
             throw ex;
         }
     }
@@ -72,7 +83,6 @@ export abstract class BasicTableService<T extends AddonData>{
 
         }
     }
-
 
     // validate data
     abstract validateData(addonData: T): Promise<void>;
@@ -93,7 +103,7 @@ export abstract class BasicTableService<T extends AddonData>{
             return await this.postData(addonData);
         }
         catch (ex) {
-            console.error(`Failed to upsert data to ${this.schemaName} table with error: ${JSON.stringify(ex)}`);
+            console.error(`Failed to upsert data to ${this.schemaName} table with error: ${ex}`);
             throw ex;
         }
     }
@@ -103,7 +113,15 @@ export abstract class BasicTableService<T extends AddonData>{
     }
 
     async getByKeys(keys: string[]): Promise<T[]> {
-        return (await (await this.papiClient.addons.data.search.uuid(this.client.AddonUUID).table(this.schemaName).post({ KeyList: keys })).Objects) as T[];
+        try{
+            const searchData: SearchData<AddonData> = await this.papiClient.addons.data.search.uuid(this.client.AddonUUID).table(this.schemaName).post({ KeyList: keys });
+            const results = searchData.Objects as T[];
+            return results;
+        }
+        catch(ex){
+            console.error(`Failed to get data from ${this.schemaName} table with error: ${ex}`);
+            throw ex;
+        }
     }
 
     async delete(keys: string[]): Promise<any> {
@@ -122,7 +140,7 @@ export abstract class BasicTableService<T extends AddonData>{
             }, { concurrency: MAX_PARALLEL });
         }
         catch (ex) {
-            console.error(`Failed to delete data from ${this.schemaName} table with error: ${JSON.stringify(ex)}`);
+            console.error(`Failed to delete data from ${this.schemaName} table with error: ${ex}`);
             throw ex;
         }
 

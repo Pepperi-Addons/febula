@@ -45,6 +45,7 @@ export class FiltersListComponent implements OnInit {
 
 
     private async openAttachmentDialog(callback: (value: any) => void, data?: { filterObject: FilterObject }) {
+        this.listDataSource = this.getDataSource(true); // update all different resources so form will have the latest data
         const config = this.dialogService.getDialogConfig({}, 'large');
 
         config.data = new PepDialogData({
@@ -53,6 +54,7 @@ export class FiltersListComponent implements OnInit {
         this.dialogService.openDialog(FilterFormComponent, { ...data, filterObjectList: this.filterObjects, resourceList: this.resources }, config).afterClosed().subscribe((value) => {
             if (value) {
                 console.log(JSON.stringify(value));
+                this.listDataSource = this.getDataSource(true);
                 callback(value);
             }
         });
@@ -95,9 +97,9 @@ export class FiltersListComponent implements OnInit {
         }
     }
 
-    async getSearchedFilterObjects(searchText?: string): Promise<FilterObject[]> {
+    async getSearchedFilterObjects(force: boolean, searchText?: string): Promise<FilterObject[]> {
         try {
-            if (this.filterObjects === undefined) {
+            if (this.filterObjects === undefined || force) {
                 await this.updateFilterObjects();
             }
             if (this.resources === undefined) {
@@ -117,10 +119,10 @@ export class FiltersListComponent implements OnInit {
     }
 
 
-    getDataSource() {
+    getDataSource(force: boolean = false) {
         return {
             init: async (state) => {
-                const searchedFilterObjects = await this.getSearchedFilterObjects(state.searchString);
+                const searchedFilterObjects = await this.getSearchedFilterObjects(force, state.searchString);
                 return {
                     dataView: {
                         Context: {
@@ -160,7 +162,7 @@ export class FiltersListComponent implements OnInit {
                                 ReadOnly: true
                             },
                             {
-                                FieldID: 'PreviousFilter',
+                                FieldID: 'PreviousFilterName',
                                 Type: 'TextBox',
                                 Title: 'In Filter Rule',
                                 Mandatory: false,
@@ -201,6 +203,7 @@ export class FiltersListComponent implements OnInit {
                     items: searchedFilterObjects.map(filterObject => {
                         return {
                             ...filterObject,
+                            PreviousFilterName: this.filterObjectsMap.get(filterObject.PreviousFilter)?.Name,
                             Locked: this.isLocked(filterObject)
                         }
                     }),
@@ -227,7 +230,7 @@ export class FiltersListComponent implements OnInit {
         handler: async (data) => {
             const filterObjectKeys = data?.rows;
             await this.fomoService.deleteFilterObjects(filterObjectKeys);
-            this.listDataSource = this.getDataSource();
+            this.listDataSource = this.getDataSource(true);
         }
     }
 
