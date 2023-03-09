@@ -9,7 +9,6 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
     schemaName: string;
     schema: AddonDataScheme;
     jsonSchemaToValidate: any;
-    resources?: Collection[] = undefined;
     chosenResource?: Collection;
 
     constructor(client: Client, ownerUUID?: string, secretKey?: string) {
@@ -32,19 +31,6 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
             return count >= 2;
         }
         return false;
-    }
-
-    // setup resources array with all resources
-    private initResources = async (): Promise<void> => {
-        if (!this.resources) {
-            try {
-                this.resources = await this.getResources()
-            }
-            catch (ex) {
-                console.error(`Error in initResources: ${ex}`);
-                throw ex;
-            }
-        }
     }
 
     // checks that a given field exists in the chosen resource and that the field type is 'Resource'
