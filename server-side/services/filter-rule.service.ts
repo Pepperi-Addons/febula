@@ -10,7 +10,6 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
     schema: AddonDataScheme;
     jsonSchemaToValidate: any;
     filterObjectService: FilterObjectService;
-    resources?: Collection[] = undefined;
     chosenResource?: Collection;
 
     constructor(client: Client, ownerUUID?: string, secretKey?: string) {
@@ -39,20 +38,6 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
             resource && resource.Fields && Object.keys(resource.Fields).some((fieldKey) => fieldKey === field && resource.Fields![fieldKey].Type === 'Resource' && resource.Fields![fieldKey].Resource === this.chosenResource!.Name);
     }
 
-    // setup resources array with all resources that have at least 2 fields of type 'Resource'
-    private initResources = async (): Promise<void> => {
-        if (!this.resources) {
-            try {
-                this.resources = await this.getResources()
-                this.resources = this.resources!.filter(this.resourceIsReferenced);
-            }
-            catch (ex) {
-                console.error(`Error in initResources: ${ex}`);
-                throw ex;
-            }
-        }
-    }
-
     // validate that reference filter exists and that it is a filter for the chosen resource
     async validateFilter(addonData: FilterRule): Promise<void> {
         if (addonData.Filter) {
@@ -71,7 +56,7 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
                 }
             }
             catch (ex) {
-                throw new Error(`Filter validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nKey: ${referencedFilterObjectKey} not found.`);
+                throw ex;
             }
         }
     }
@@ -92,9 +77,10 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
     async validateResource(addonData: FilterRule): Promise<void> {
         // if resources is undefined, get all resources
         await this.initResources();
+        const filteredResources = this.resources!.filter(this.resourceIsReferenced);
 
         // check if the chosen resource exist in the resources array
-        const resource = this.resources!.find((resource) => resource.Name === addonData.Resource);
+        const resource = filteredResources!.find((resource) => resource.Name === addonData.Resource);
         if (!resource) {
             throw new Error(`Resource validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nResource: ${addonData.Resource} not found, or not referenced by another resource.`);
         }

@@ -6,6 +6,7 @@ import { Promise } from "bluebird";
 
 export abstract class BasicTableService<T extends AddonData>{
     papiClient: PapiClient;
+    resources?: Collection[];
     abstract schemaName: string;
     abstract schema: AddonDataScheme;
     abstract jsonSchemaToValidate: any;
@@ -28,6 +29,19 @@ export abstract class BasicTableService<T extends AddonData>{
         catch (ex) {
             console.error(`Error in get_resources: ${ex}`);
             throw new Error((ex as { message: string }).message);
+        }
+    }
+
+    // setup resources array with all resources
+    protected initResources = async (): Promise<void> => {
+        if (!this.resources) {
+            try {
+                this.resources = await this.getResources()
+            }
+            catch (ex) {
+                console.error(`Error in initResources: ${ex}`);
+                throw ex;
+            }
         }
     }
 
