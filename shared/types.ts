@@ -42,3 +42,13 @@ export interface FilterRule extends AddonData {
     Filter: string;
     AddonUUID?: string;
 }
+
+/**
+ * Key?: string; - Key of the basic filter object (UUID)
+ * 
+ * Resource: string; - Name of the resource referenced by the basic filter object's "Field" field
+ */
+export interface BasicFilterRuleData {
+    Resource: string,
+    Key: string
+}

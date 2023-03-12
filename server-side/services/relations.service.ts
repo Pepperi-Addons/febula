@@ -80,8 +80,8 @@ export class RelationsService {
 
     async upsertRelations() {
         // For settings block use this.
-        const blockRelationSlugName = 'FOMO';
-        const blockRelationGroupName = 'Fomo_Group';
+        const blockRelationSlugName = 'fomo';
+        const blockRelationGroupName = 'FomoGroup';
         const blockRelationName = 'FOMO_Relation';
         const blockRelationDescription = 'Look at this FOMO block';
         await this.upsertSettingsRelation(blockRelationSlugName, blockRelationGroupName, blockRelationName, blockRelationDescription);
