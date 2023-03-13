@@ -18,8 +18,8 @@
     "Editors": [
       {
         "ParentPackageName": "Febula",
-        "PackageName": "fomo",
-        "Description": "Fear Of Missing Out on all of those sweet sweet filters"
+        "PackageName": "system_filters",
+        "Description": "System Level Filtering"
       }
     ],
     "Dependencies": {},
