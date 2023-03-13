@@ -1,7 +1,7 @@
 import { Client } from "@pepperi-addons/debug-server/dist";
 import { AddonDataScheme, Collection } from "@pepperi-addons/papi-sdk";
 import { filterObjectJsonschema, filterObjectSchema, filterObjectSchemaName } from "../schemas-definition";
-import { FilterObject } from "../../shared/types";
+import { BasicFilterRuleData, FilterObject } from "../../shared/types";
 import { BasicTableService } from "./basic-table.service";
 
 
@@ -34,21 +34,23 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
     }
 
     // checks that a given field exists in the chosen resource and that the field type is 'Resource'
-    private isFieldValid(addonData: FilterObject, fieldName: string): void {
+    private isFieldValid(addonData: FilterObject, fieldName: string, previous = false): void {
         // make sure chosenResource is defined
         if (!this.chosenResource) {
-            throw new Error(`Field validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)} fieldName: ${fieldName}\nResource: ${addonData.Resource} not found.`);
+            throw new Error(`${previous ? "Previous" : ""}Field validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)} fieldName: ${fieldName}\nResource: ${addonData.Resource} not found.`);
         }
+
+        // NOTE - check that field was provided is done in the json schema
 
         // check if the chosen field exist in the chosen resource
         const field = this.chosenResource.Fields![fieldName];
         if (!field) {
-            throw new Error(`Field validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)} fieldName: ${fieldName}\nField: ${fieldName} not found in resource: ${addonData.Resource}.`);
+            throw new Error(`${previous ? "Previous" : ""}Field validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)} fieldName: ${fieldName}\nField: ${fieldName} not found in resource: ${addonData.Resource}.`);
         }
 
         // the chosen field should either be of type 'Resource' or the field name should be 'Key'
         if ((field as any).Type !== 'Resource' && fieldName !== 'Key') {
-            throw new Error(`Field validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)} fieldName: ${fieldName}\nField: ${fieldName} in resource: ${addonData.Resource} should either be of type 'Resource' or the field name should be 'Key'.`);
+            throw new Error(`${previous ? "Previous" : ""}Field validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)} fieldName: ${fieldName}\nField: ${fieldName} in resource: ${addonData.Resource} should either be of type 'Resource' or the field name should be 'Key'.`);
         }
     }
 
@@ -97,7 +99,7 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
             return;
         }
 
-        this.isFieldValid(addonData, addonData.PreviousField);
+        this.isFieldValid(addonData, addonData.PreviousField, true);
     }
 
     // validate that PreviousFilter exist, and that its resource is the same as the previous field resource
@@ -128,5 +130,44 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
         this.validateField(addonData);
         this.validatePreviousField(addonData);
         await this.validatePreviousFilter(addonData);
+    }
+
+    async upsertBasicFilterObjects(): Promise<BasicFilterRuleData[]> {
+        try {
+            const currentUserFilterObject: FilterObject = {
+                Name: 'Current user',
+                Resource: 'users',
+                Field: 'Key'
+            };
+
+            const usersResult = await this.upsert(currentUserFilterObject, true);
+
+            const currentUserResourceAndKey = {
+                Resource: 'users',
+                Key: usersResult.Key
+            };
+
+            const assignedAccountsFilterObject: FilterObject = {
+                Name: 'Assigned accounts',
+                Resource: 'account_users',
+                Field: 'Account',
+                PreviousFilter: usersResult.Key,
+                PreviousField: 'User'
+            };
+
+            const accountUsersResult = await this.upsert(assignedAccountsFilterObject, true);
+
+            const assignedAccountsResourceAndKey = {
+                Resource: 'accounts',
+                Key: accountUsersResult.Key
+            };
+
+            return [currentUserResourceAndKey, assignedAccountsResourceAndKey];
+        }
+        catch (ex) {
+            console.error(`upsertBasicFilterObjects failed: ${ex}`);
+            throw ex;
+        }
+
     }
 }

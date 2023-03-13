@@ -9,6 +9,7 @@ The error Message is important! it will be written in the audit log and help the
 */
 
 import { Client, Request } from '@pepperi-addons/debug-server';
+import { BasicFilterRuleData } from '../shared/types';
 import { FilterObjectService } from './services/filter-object.service';
 import { FilterRuleService } from './services/filter-rule.service';
 import { RelationsService } from './services/relations.service';
@@ -22,6 +23,10 @@ export async function install(client: Client, request: Request): Promise<any> {
         await filterObjectService.createSchema();
         await filterRuleService.createSchema();
         await relationService.upsertRelations();
+
+        // upsert default Filters and Profile-filters
+        const basicFilterRuleData: BasicFilterRuleData[] = await filterObjectService.upsertBasicFilterObjects();
+        await filterRuleService.upsertBasicFilterRules(basicFilterRuleData);
     } catch (err) {
         throw new Error(`Failed to create relations. error - ${err}`);
     }
@@ -40,3 +45,5 @@ export async function upgrade(client: Client, request: Request): Promise<any> {
 export async function downgrade(client: Client, request: Request): Promise<any> {
     return { success: true, resultObject: {} }
 }
+
+

@@ -102,12 +102,17 @@ export abstract class BasicTableService<T extends AddonData>{
     abstract validateData(addonData: T): Promise<void>;
 
     // upsert filter object after validation and add key if missing
-    async upsert(addonData: T): Promise<any> {
+    async upsert(addonData: T, system: boolean = false): Promise<any> {
         if (!addonData.Key) {
             addonData.Key = uuid();
         }
         if (!addonData.AddonUUID) {
-            (addonData as any).AddonUUID = this.ownerUUID;
+            // if the ownerUUID is not the same as the client addonUUID, then it is a system Filter.
+            // in this case, we need to set the AddonUUID to the ownerUUID.
+            // if the ownerUUID is the same as the client addonUUID, but the system flag is true, then it is also a system Filter.
+            if (this.ownerUUID !== this.client.AddonUUID || system) {
+                (addonData as any).AddonUUID = this.ownerUUID;
+            }
         }
 
         await this.validateData(addonData);
@@ -127,12 +132,12 @@ export abstract class BasicTableService<T extends AddonData>{
     }
 
     async getByKeys(keys: string[]): Promise<T[]> {
-        try{
+        try {
             const searchData: SearchData<AddonData> = await this.papiClient.addons.data.search.uuid(this.client.AddonUUID).table(this.schemaName).post({ KeyList: keys });
             const results = searchData.Objects as T[];
             return results;
         }
-        catch(ex){
+        catch (ex) {
             console.error(`Failed to get data from ${this.schemaName} table with error: ${ex}`);
             throw ex;
         }

@@ -14,7 +14,7 @@ export class FilterObjectTestService extends BasicTableTestService<FilterObject>
         this.functionEndpointSuffix = '/api/filters';
     }
 
-    async getTestResource(): Promise<AddonDataScheme> {
+    getTestResource(): AddonDataScheme {
         const resource = {
             Name: this.testResourceName,
             Type: "data",
@@ -29,6 +29,9 @@ export class FilterObjectTestService extends BasicTableTestService<FilterObject>
                     AddonUUID: this.client.AddonUUID,
                     Resource: this.testResourceName
                 },
+                StringProperty: {
+                    Type: "String"
+                }
             },
             GenericResource: true
         }

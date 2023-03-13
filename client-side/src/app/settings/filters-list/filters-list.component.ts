@@ -61,7 +61,7 @@ export class FiltersListComponent implements OnInit {
     }
 
     private isLocked(filterObject: FilterObject) {
-        return filterObject.AddonUUID && filterObject.AddonUUID != config.AddonUUID;
+        return filterObject.AddonUUID !== undefined;
     }
 
     buttonClick($event: any) {

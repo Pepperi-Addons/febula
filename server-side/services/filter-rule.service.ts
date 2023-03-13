@@ -1,9 +1,10 @@
 import { Client } from "@pepperi-addons/debug-server/dist";
 import { AddonDataScheme, Collection } from "@pepperi-addons/papi-sdk";
 import { filterRuleJsonschema, filterRuleSchema, filterRuleSchemaName } from "../schemas-definition";
-import { FilterObject, FilterRule } from "../../shared/types";
+import { BasicFilterRuleData, FilterObject, FilterRule } from "../../shared/types";
 import { BasicTableService } from "./basic-table.service";
 import { FilterObjectService } from "./filter-object.service";
+import { Promise } from "bluebird";
 
 export class FilterRuleService extends BasicTableService<FilterRule>{
     schemaName: string;
@@ -68,7 +69,7 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
             // check if the filter is the same by comparing the keys
             const filterRule = filterRules[0];
             if (filterRule.Key !== addonData.Key) {
-                throw new Error(`Validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nProfile and filter combination must be unique.`);
+                throw new Error(`Validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nProfile and resource combination must be unique.`);
             }
         }
     }
@@ -101,6 +102,33 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
 
         // validate Filter
         await this.validateFilter(addonData);
+    }
+
+    async upsertBasicFilterRules(basicFilterRuleData: BasicFilterRuleData[]): Promise<void> {
+        // upsert a filter rule for each employee type for each basicFilterRuleData
+        const filterRules: FilterRule[] = [];
+        basicFilterRuleData.forEach((basicFilterRule) => {
+            for (let employeeType = 1; employeeType <= 3; employeeType++) {
+                filterRules.push({
+                    Resource: basicFilterRule.Resource,
+                    EmployeeType: (employeeType as 1 | 2 | 3),
+                    Filter: basicFilterRule.Key
+                });
+            }
+        });
+
+        // upsert the filter rules
+        try {
+            const MAX_PARALLEL = 1;
+
+            await Promise.map(filterRules, async (filterRule) => {
+                await this.upsert(filterRule);
+            }, { concurrency: MAX_PARALLEL });
+        }
+        catch (ex) {
+            console.error(`Error while upserting basic filter rules: ${ex}`);
+            throw ex;
+        }
     }
 
 }

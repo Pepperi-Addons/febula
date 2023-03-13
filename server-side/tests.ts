@@ -80,13 +80,24 @@ export async function fomo_tests(client: Client, request: Request) {
 
             describe('init resource', () => {
                 let testResource: AddonDataScheme;
+                let secondaryTestResource: AddonDataScheme;
                 it('create test resource', async () => {
-                    testResource = await filterObjectService.getTestResource();
+                    testResource = filterObjectService.getTestResource();
                     await papiClient.addons.data.schemes.post(testResource);
                 });
                 it('make sure test resource exists', async () => {
                     const resources: Collection[] = await papiClient.resources.resource('resources').get({ page_size: -1 }) as Collection[];
                     const foundTestResource = resources.find(r => r.Name === testResource.Name);
+                    expect(foundTestResource).to.be.an('object');
+                });
+                it('create secondary test resource', async () => {
+                    secondaryTestResource = filterObjectService.getTestResource();
+                    secondaryTestResource.Name = filterObjectService.secondaryTestResourceName;
+                    await papiClient.addons.data.schemes.post(secondaryTestResource);
+                });
+                it('make sure secondary test resource exists', async () => {
+                    const resources: Collection[] = await papiClient.resources.resource('resources').get({ page_size: -1 }) as Collection[];
+                    const foundTestResource = resources.find(r => r.Name === secondaryTestResource.Name);
                     expect(foundTestResource).to.be.an('object');
                 });
             });
@@ -135,43 +146,103 @@ export async function fomo_tests(client: Client, request: Request) {
             })
 
             describe('Validation tests', () => {
-                it('Insert without name', async () => {
-                    const filterObject = await filterObjectService.createObject();
-                    // @ts-ignore
-                    delete filterObject.Name;
-                    await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
+                describe('Name validation', () => {
+                    it('Insert without name', async () => {
+                        const filterObject = await filterObjectService.createObject();
+                        // @ts-ignore
+                        delete filterObject.Name;
+                        await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
+                    });
                 });
-                it('Insert without resource', async () => {
-                    const filterObject = await filterObjectService.createObject();
-                    // @ts-ignore
-                    delete filterObject.Resource;
-                    await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
+                describe('Resource validation', () => {
+                    it('Insert without resource', async () => {
+                        const filterObject = await filterObjectService.createObject();
+                        // @ts-ignore
+                        delete filterObject.Resource;
+                        await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
+                    });
+                    it('Insert with invalid resource', async () => {
+                        const filterObject = await filterObjectService.createObject();
+                        filterObject.Resource = 'invalid';
+                        await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Resource validation failed');
+                    });
                 });
-                it('Insert without field', async () => {
-                    const filterObject = await filterObjectService.createObject();
-                    // @ts-ignore
-                    delete filterObject.Field;
-                    await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
+                describe('Field validation', () => {
+                    it('Insert without field', async () => {
+                        const filterObject = await filterObjectService.createObject();
+                        // @ts-ignore
+                        delete filterObject.Field;
+                        await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
+                    });
+                    it('insert with field that does not exist in resource', async () => {
+                        const filterObject = await filterObjectService.createObject();
+                        filterObject.Field = 'invalid';
+                        await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Field validation failed');
+                    });
+                    it('insert with field that is not a reference', async () => {
+                        const filterObject = await filterObjectService.createObject();
+                        filterObject.Field = 'StringProperty';
+                        await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Field validation failed');
+                    });
                 });
-                it('Insert with PreviousField and without PreviousFilter', async () => {
-                    const filterObject = await filterObjectService.createObject();
-                    filterObject.PreviousField = filterObjectService.testPreviousFieldName;
-                    await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
-                });
-                it('Insert with PreviousFilter and without PreviousField', async () => {
-                    // first upsert a filter object
-                    const filterObject = await filterObjectService.createObject();
-                    const res = await filterObjectService.upsert(filterObject);
-                    // upsert a filter object with PreviousFilter but without PreviousField
-                    const filterObject2 = await filterObjectService.createObject();
-                    filterObject2.PreviousFilter = res.Key;
-                    await expect(filterObjectService.upsert(filterObject2)).eventually.to.be.rejectedWith('Scheme validation failed');
-                });
-                it('Insert with PreviousFilter and PreviousField but PreviousFilter is not found', async () => {
-                    const filterObject = await filterObjectService.createObject();
-                    filterObject.PreviousFilter = 'PreviousFilter';
-                    filterObject.PreviousField = filterObjectService.testPreviousFieldName;
-                    await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('PreviousFilter validation failed');
+                describe('Previous field and filter validation', () => {
+
+                    it('Insert with PreviousField and without PreviousFilter', async () => {
+                        const filterObject = await filterObjectService.createObject();
+                        filterObject.PreviousField = filterObjectService.testPreviousFieldName;
+                        await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
+                    });
+                    it('Insert with PreviousFilter and without PreviousField', async () => {
+                        // first upsert a filter object
+                        const filterObject = await filterObjectService.createObject();
+                        const res = await filterObjectService.upsert(filterObject);
+                        // upsert a filter object with PreviousFilter but without PreviousField
+                        const filterObject2 = await filterObjectService.createObject();
+                        filterObject2.PreviousFilter = res.Key;
+                        await expect(filterObjectService.upsert(filterObject2)).eventually.to.be.rejectedWith('Scheme validation failed');
+                    });
+                    it('Insert with PreviousFilter and PreviousField but PreviousFilter is not found', async () => {
+                        const filterObject = await filterObjectService.createObject();
+                        filterObject.PreviousFilter = 'PreviousFilter';
+                        filterObject.PreviousField = filterObjectService.testPreviousFieldName;
+                        await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('PreviousFilter validation failed');
+                    });
+                    it('Insert with PreviousFilter and PreviousField but PreviousField doesnt exist on resource', async () => {
+                        // first upsert a filter object
+                        const filterObject = await filterObjectService.createObject();
+                        const res = await filterObjectService.upsert(filterObject);
+                        // upsert a filter object with PreviousFilter and PreviousField
+                        const filterObject2 = await filterObjectService.createObject();
+                        filterObject2.PreviousFilter = res.Key;
+                        filterObject2.PreviousField = 'invalid';
+                        await expect(filterObjectService.upsert(filterObject2)).eventually.to.be.rejectedWith('PreviousField validation failed');
+                    });
+                    it('Insert with PreviousFilter and PreviousField but PreviousField is not a reference', async () => {
+                        // first upsert a filter object
+                        const filterObject = await filterObjectService.createObject();
+                        const res = await filterObjectService.upsert(filterObject);
+                        // upsert a filter object with PreviousFilter and PreviousField
+                        const filterObject2 = await filterObjectService.createObject();
+                        filterObject2.PreviousFilter = res.Key;
+                        filterObject2.PreviousField = 'StringProperty';
+                        await expect(filterObjectService.upsert(filterObject2)).eventually.to.be.rejectedWith('PreviousField validation failed');
+                    });
+                    it('Insert with PreviousFilter and PreviousField but the previousFilter resource is not the same as chosen field resource', async () => {
+                        const secondResourceName = filterObjectService.secondaryTestResourceName;
+                        // first upsert a filter object
+                        const filterObject = await filterObjectService.createObject({
+                            Resource: secondResourceName
+                        });
+                        const res = await filterObjectService.upsert(filterObject);
+                        // upsert a filter object with PreviousFilter and PreviousField
+                        const filterObject2 = await filterObjectService.createObject();
+                        // the previous Filter resource is the second resource
+                        filterObject2.PreviousFilter = res.Key;
+                        // the field reference is to the first resource
+                        filterObject2.PreviousField = filterObjectService.testPreviousFieldName;
+                        await expect(filterObjectService.upsert(filterObject2)).eventually.to.be.rejectedWith('PreviousFilter validation failed');
+                    });
+
                 });
                 it('Clean', async () => {
                     await cleanup();
@@ -225,28 +296,50 @@ export async function fomo_tests(client: Client, request: Request) {
             })
 
             describe('Validation tests', () => {
-                it('Insert without employee type', async () => {
-                    const filterRule = await filterRuleService.createObject();
-                    // @ts-ignore
-                    delete filterRule.EmployeeType;
-                    await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
+                describe('Profile validations', () => {
+                    it('Insert without employee type', async () => {
+                        const filterRule = await filterRuleService.createObject();
+                        // @ts-ignore
+                        delete filterRule.EmployeeType;
+                        await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
+                    });
                 });
-                it('Insert without resource', async () => {
-                    const filterRule = await filterRuleService.createObject();
-                    // @ts-ignore
-                    delete filterRule.Resource;
-                    await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
+                describe('Resource validations', () => {
+                    it('Insert without resource', async () => {
+                        const filterRule = await filterRuleService.createObject();
+                        // @ts-ignore
+                        delete filterRule.Resource;
+                        await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
+                    });
+                    it('Insert with resource that is not found', async () => {
+                        const filterRule = await filterRuleService.createObject();
+                        filterRule.Resource = 'InvalidResource';
+                        await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Resource validation failed');
+                    });
+                    it('Insert with resource that is not referenced by another resource', async () => {
+                        const filterRule = await filterRuleService.createObject();
+                        filterRule.Resource = filterObjectService.secondaryTestResourceName;
+                        await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Resource validation failed');
+                    });
                 });
-                it('Insert without filter', async () => {
-                    const filterRule = await filterRuleService.createObject();
-                    // @ts-ignore
-                    delete filterRule.Filter;
-                    await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
+                describe('Filter validations', () => {
+                    it('Insert without filter', async () => {
+                        const filterRule = await filterRuleService.createObject();
+                        // @ts-ignore
+                        delete filterRule.Filter;
+                        await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
+                    });
+                    it('Insert with filter that is not found', async () => {
+                        const filterRule = await filterRuleService.createObject();
+                        filterRule.Filter = 'InvalidFilter';
+                        await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Filter validation failed');
+                    });
                 });
-                it('Insert with filter that is not a valid filter', async () => {
+                it('insert with an existing combination of employee type and resource', async () => {
                     const filterRule = await filterRuleService.createObject();
-                    filterRule.Filter = 'InvalidFilter';
-                    await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Filter validation failed');
+                    const res = await filterRuleService.upsert(filterRule);
+                    const filterRule2 = await filterRuleService.createObject();
+                    await expect(filterRuleService.upsert(filterRule2)).eventually.to.be.rejectedWith('Profile and resource combination must be unique');
                 });
                 it('Clean', async () => {
                     await cleanup();
