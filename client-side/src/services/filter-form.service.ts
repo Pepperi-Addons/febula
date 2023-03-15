@@ -55,7 +55,9 @@ export class FilterFormService {
     }
 
     private setFieldOptions() {
-        this.fieldOptions = this.filterObject.Resource ? Object.keys(this.chosenResource.Fields).filter((field) => this.chosenResource.Fields[field].Type === 'Resource') : [];
+        this.fieldOptions = this.filterObject.Resource ?
+            ["Key", ...Object.keys(this.chosenResource.Fields).filter((field) => this.chosenResource.Fields[field].Type === 'Resource')] :
+            [];
     }
 
     // same as setFieldOptions only excludes the field that was chosen as the previous field

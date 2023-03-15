@@ -44,7 +44,7 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
 
         // check if the chosen field exist in the chosen resource
         const field = this.chosenResource.Fields![fieldName];
-        if (!field) {
+        if (!field && fieldName !== 'Key') {
             throw new Error(`${previous ? "Previous" : ""}Field validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)} fieldName: ${fieldName}\nField: ${fieldName} not found in resource: ${addonData.Resource}.`);
         }
 
