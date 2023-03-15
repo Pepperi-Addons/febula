@@ -85,6 +85,14 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
             throw new Error(`Resource validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nResource: ${addonData.Resource} not found.`);
         }
         this.chosenResource = resource;
+        this.chosenResource.Fields = {
+            ...this.chosenResource.Fields,
+            Key: {
+                Type: 'String',
+                Mandatory: true,
+                Description: 'Key'
+            }
+        }
     }
 
     // validate that field exist in the chosen resource and that the field type is 'Resource'
