@@ -93,11 +93,22 @@ export async function fomo_tests(client: Client, request: Request) {
                 it('create secondary test resource', async () => {
                     secondaryTestResource = filterObjectService.getTestResource();
                     secondaryTestResource.Name = filterObjectService.secondaryTestResourceName;
+                    secondaryTestResource.Fields![filterObjectService.testFieldName].Resource = secondaryTestResource.Name;
                     await papiClient.addons.data.schemes.post(secondaryTestResource);
                 });
                 it('make sure secondary test resource exists', async () => {
                     const resources: Collection[] = await papiClient.resources.resource('resources').get({ page_size: -1 }) as Collection[];
                     const foundTestResource = resources.find(r => r.Name === secondaryTestResource.Name);
+                    expect(foundTestResource).to.be.an('object');
+                });
+                it('create third test resource', async () => {
+                    const thirdTestResource = filterObjectService.getTestResource();
+                    thirdTestResource.Name = filterObjectService.thirdTestResourceName;
+                    await papiClient.addons.data.schemes.post(thirdTestResource);
+                });
+                it('make sure third test resource exists', async () => {
+                    const resources: Collection[] = await papiClient.resources.resource('resources').get({ page_size: -1 }) as Collection[];
+                    const foundTestResource = resources.find(r => r.Name === filterObjectService.thirdTestResourceName);
                     expect(foundTestResource).to.be.an('object');
                 });
             });
@@ -207,7 +218,7 @@ export async function fomo_tests(client: Client, request: Request) {
                         filterObject.PreviousField = filterObjectService.testPreviousFieldName;
                         await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('PreviousFilter validation failed');
                     });
-                    it('Insert with PreviousFilter and PreviousField but PreviousField doesnt exist on resource', async () => {
+                    it('Insert with PreviousFilter and PreviousField but PreviousField does not exist on resource', async () => {
                         // first upsert a filter object
                         const filterObject = await filterObjectService.createObject();
                         const res = await filterObjectService.upsert(filterObject);
@@ -318,7 +329,7 @@ export async function fomo_tests(client: Client, request: Request) {
                     });
                     it('Insert with resource that is not referenced by another resource', async () => {
                         const filterRule = await filterRuleService.createObject();
-                        filterRule.Resource = filterObjectService.secondaryTestResourceName;
+                        filterRule.Resource = filterObjectService.thirdTestResourceName;
                         await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Resource validation failed');
                     });
                 });

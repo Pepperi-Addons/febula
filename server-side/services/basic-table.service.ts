@@ -37,6 +37,18 @@ export abstract class BasicTableService<T extends AddonData>{
         if (!this.resources) {
             try {
                 this.resources = await this.getResources()
+                this.resources?.forEach((resource) => {
+                    resource.Fields = {
+                        ...resource.Fields,
+                        Key: {
+                            Type: 'Resource',
+                            Resource: resource.Name,
+                            AddonUUID: resource.AddonUUID,
+                            Mandatory: true,
+                            Description: 'Key references self'
+                        }
+                    }
+                })
             }
             catch (ex) {
                 console.error(`Error in initResources: ${ex}`);

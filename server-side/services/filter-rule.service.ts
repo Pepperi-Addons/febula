@@ -25,7 +25,7 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
     private resourceIsReferenced = (resource: Collection) => {
         return this.resources!.some((resource2) =>
             resource2.Fields && Object.keys(resource2.Fields).some((field) =>
-                resource2.Fields![field].Type === 'Resource' && resource2.Fields![field].Resource === resource.Name && resource2.Fields![field].AddonUUID === resource.AddonUUID));
+                field !== "Key" && resource2.Fields![field].Type === 'Resource' && resource2.Fields![field].Resource === resource.Name && resource2.Fields![field].AddonUUID === resource.AddonUUID));
     }
 
     // predicate that takes a filter object and returns true only if its "Field" field is a resource field that points to the chosen resource. However, if the Field=Key, it should be considered as a reference to the resource itself
