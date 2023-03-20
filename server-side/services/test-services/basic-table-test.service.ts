@@ -7,6 +7,7 @@ export abstract class BasicTableTestService<T extends AddonData>{
     papiClient: PapiClient;
     testResourceName = 'test_resource';
     secondaryTestResourceName = 'test_resource2';
+    thirdTestResourceName = 'test_resource3';
     abstract functionEndpointSuffix: string;
     upsertedRecordsKeys: string[] = [];
     MAX_PARALLEL = 10;

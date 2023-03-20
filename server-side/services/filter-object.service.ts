@@ -49,7 +49,7 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
         }
 
         // the chosen field should either be of type 'Resource' or the field name should be 'Key'
-        if ((field as any).Type !== 'Resource' && fieldName !== 'Key') {
+        if ((field as any).Type !== 'Resource') {
             throw new Error(`${previous ? "Previous" : ""}Field validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)} fieldName: ${fieldName}\nField: ${fieldName} in resource: ${addonData.Resource} should either be of type 'Resource' or the field name should be 'Key'.`);
         }
     }
@@ -117,8 +117,14 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
 
         // validate that referenced filter resource is the same as the previous field resource
         const previousFieldResourceName = this.chosenResource!.Fields![addonData.PreviousField!].Resource;
-        if (previousFieldResourceName !== referencedFilterObject.Resource) {
-            throw new Error(`PreviousFilter validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nFilter with key: ${addonData.PreviousFilter} has a different resource ("${referencedFilterObject.Resource}") than the previous field ("${previousFieldResourceName}").`);
+        const previousFilterField = referencedFilterObject.Field;
+        const previousFilterResource = referencedFilterObject.Resource;
+        const previousChosenResource = this.resources!.find((resource) => resource.Name === previousFilterResource);
+        if (!previousChosenResource) {
+            throw new Error(`PreviousFilter validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nFilter with key: ${addonData.PreviousFilter} has a resource ("${previousFilterResource}") that does not exist.`);
+        }
+        if (previousFieldResourceName !== previousChosenResource.Fields![previousFilterField].Resource) {
+            throw new Error(`PreviousFilter validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nThe field of filter with key: ${addonData.PreviousFilter} is ${previousFilterField} and it references a different resource ("${previousChosenResource.Fields![previousFilterField].Resource}") than the previous field ("${previousFieldResourceName}").`);
         }
     }
 

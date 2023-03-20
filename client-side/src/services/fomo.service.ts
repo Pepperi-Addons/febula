@@ -48,6 +48,16 @@ export class FomoService {
         try {
             const url = 'profile_filters?page_size=-1' + (searchString ? `&where=Resource like '%25${searchString}%25'` : '');
             const getResults = await this.pepAddonService.getAddonApiCall(config.AddonUUID, 'api', url).toPromise();
+            // order results by resource
+            getResults.sort((a, b) => {
+                if (a.Resource.toLowerCase() < b.Resource.toLowerCase()) {
+                    return -1;
+                }
+                if (a.Resource.toLowerCase() > b.Resource.toLowerCase()) {
+                    return 1;
+                }
+                return 0;
+            });
             return getResults as FilterRule[];
         }
         catch (ex) {
