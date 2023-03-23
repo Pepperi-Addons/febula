@@ -14,3 +14,7 @@
         .field1 { grid-area: field1; }
     }
 }
+
+::ng-deep .header-content {
+    margin-top: 0 !important;
+}
