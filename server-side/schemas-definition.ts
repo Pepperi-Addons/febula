@@ -14,7 +14,8 @@ export const filterObjectSchema: AddonDataScheme = {
             Type: "Resource",
             AddonUUID: AddonUUID,
             Resource: filterObjectSchemaName
-        } // This is the key of the filter object we wish to filter by
+        }, // This is the key of the filter object we wish to filter by
+        AddonUUID: { Type: 'String' } // This is the UUID of the owner of this filter object
     },
 }
 export const filterObjectJsonschema = {
@@ -36,6 +37,9 @@ export const filterObjectJsonschema = {
             "type": "string"
         },
         "PreviousFilter": {
+            "type": "string"
+        },
+        "AddonUUID": {
             "type": "string"
         }
     },
@@ -61,7 +65,9 @@ export const filterRuleSchema: AddonDataScheme = {
             Type: "Resource",
             AddonUUID: AddonUUID,
             Resource: filterObjectSchemaName
-        } // This is the key of the filter object we wish to filter by for this resource and profile.
+        }, // This is the key of the filter object we wish to filter by for this resource and profile.
+        AddonUUID: { Type: 'String' }, // This is the UUID of the owner of this filter rule
+        PermissionSet: { Type: 'String' } // This is the permission set of this filter rule. "Sync" or "Online". Default is "Sync"
     }
 }
 export const filterRuleJsonschema = {
@@ -80,11 +86,19 @@ export const filterRuleJsonschema = {
         },
         "Filter": {
             "type": "string"
+        },
+        "AddonUUID": {
+            "type": "string"
+        },
+        "PermissionSet": {
+            "type": "string",
+            "enum": ["Sync", "Online"]
         }
     },
     "required": [
         "EmployeeType",
         "Resource",
-        "Filter"
+        "Filter",
+        "PermissionSet"
     ]
 }
