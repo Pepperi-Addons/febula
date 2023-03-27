@@ -47,7 +47,10 @@ export class ProfileFiltersListComponent implements OnInit {
 
 
     private async openAttachmentDialog(callback: (value: any) => void, data?: { filterRule: FilterRule }) {
-        this.listDataSource = this.getDataSource(true); // update all different resources so form will have the latest data
+        //this.listDataSource = this.getDataSource(true); // update all different resources so form will have the latest data
+        await this.updateFilterObjects();
+        await this.updateResources();
+        await this.updateFilterRules();
         const config = this.dialogService.getDialogConfig({}, 'large');
 
         config.data = new PepDialogData({
