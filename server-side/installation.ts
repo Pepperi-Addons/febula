@@ -39,6 +39,8 @@ export async function uninstall(client: Client, request: Request): Promise<any> 
 }
 
 export async function upgrade(client: Client, request: Request): Promise<any> {
+    const relationService = new RelationsService(client);
+    await relationService.upsertRelations();
     return { success: true, resultObject: {} }
 }
 

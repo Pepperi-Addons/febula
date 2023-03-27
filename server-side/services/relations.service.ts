@@ -80,10 +80,10 @@ export class RelationsService {
 
     async upsertRelations() {
         // For settings block use this.
-        const blockRelationSlugName = 'fomo';
-        const blockRelationGroupName = 'FomoGroup';
+        const blockRelationSlugName = 'system_filters';
+        const blockRelationGroupName = 'Febula';
         const blockRelationName = 'FOMO_Relation';
-        const blockRelationDescription = 'Look at this FOMO block';
+        const blockRelationDescription = 'System Level Filtering';
         await this.upsertSettingsRelation(blockRelationSlugName, blockRelationGroupName, blockRelationName, blockRelationDescription);
 
         // For page block use this.

@@ -1,6 +1,6 @@
-import { IPepGenericFormDataView } from "@pepperi-addons/ngx-composite-lib/generic-form";
+import { IPepGenericFormDataView, IPepGenericFormDataViewField } from "@pepperi-addons/ngx-composite-lib/generic-form";
 import { PepAddonService } from "@pepperi-addons/ngx-lib";
-import { BaseFormDataViewField, Collection } from "@pepperi-addons/papi-sdk/dist/entities";
+import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
 import { FilterObject, FilterRule } from "../../../shared/types";
 import { FomoService } from "./fomo.service";
 
@@ -165,7 +165,7 @@ export class ProfileFiltersFormService {
     }
 
     getDataView(): IPepGenericFormDataView {
-        const profileField: BaseFormDataViewField =
+        const profileField: IPepGenericFormDataViewField =
             {
                 "FieldID": "Profile",
                 "Type": "ComboBox",
@@ -190,9 +190,9 @@ export class ProfileFiltersFormService {
                         "Vertical": "Stretch"
                     }
                 }
-            } as BaseFormDataViewField;
+            } as IPepGenericFormDataViewField;
 
-        const resourceField: BaseFormDataViewField =
+        const resourceField: IPepGenericFormDataViewField =
             {
                 "FieldID": "Resource",
                 "Type": "ComboBox",
@@ -211,9 +211,9 @@ export class ProfileFiltersFormService {
                         "Height": 0
                     }
                 }
-            } as BaseFormDataViewField;
+            } as IPepGenericFormDataViewField;
 
-        const filterField: BaseFormDataViewField = {
+        const filterField: IPepGenericFormDataViewField = {
             "FieldID": "FilterName",
             "Type": "ComboBox",
             "OptionalValues": this.getFilterOptions(),
@@ -237,7 +237,7 @@ export class ProfileFiltersFormService {
                     "Vertical": "Stretch"
                 }
             }
-        } as BaseFormDataViewField;
+        } as IPepGenericFormDataViewField;
 
         return {
             "Type": "Form",

@@ -1,6 +1,6 @@
-import { IPepGenericFormDataView } from "@pepperi-addons/ngx-composite-lib/generic-form";
+import { IPepGenericFormDataView, IPepGenericFormDataViewField } from "@pepperi-addons/ngx-composite-lib/generic-form";
 import { PepAddonService } from "@pepperi-addons/ngx-lib";
-import { BaseFormDataViewField, Collection } from "@pepperi-addons/papi-sdk/dist/entities";
+import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
 import { FilterObject, FilterRule } from "../../../shared/types";
 import { FomoService } from "./fomo.service";
 
@@ -182,32 +182,32 @@ export class FilterFormService {
     }
 
     getDataView(): IPepGenericFormDataView {
-        const nameField: BaseFormDataViewField =
-        {
-            "FieldID": "Name",
-            "Type": "TextBox",
-            "Title": "Name",
-            "Mandatory": true,
-            "ReadOnly": this.mode === 'Edit',
-            "Layout": {
-                "Origin": {
-                    "X": 0,
-                    "Y": 0
+        const nameField: IPepGenericFormDataViewField =
+            {
+                "FieldID": "Name",
+                "Type": "TextArea",
+                "Title": "Name",
+                "Mandatory": true,
+                "ReadOnly": this.mode === 'Edit',
+                "Layout": {
+                    "Origin": {
+                        "X": 0,
+                        "Y": 0
+                    },
+                    "Size": {
+                        "Width": 1,
+                        "Height": 0
+                    }
                 },
-                "Size": {
-                    "Width": 1,
-                    "Height": 0
+                "Style": {
+                    "Alignment": {
+                        "Horizontal": "Stretch",
+                        "Vertical": "Stretch"
+                    }
                 }
-            },
-            "Style": {
-                "Alignment": {
-                    "Horizontal": "Stretch",
-                    "Vertical": "Stretch"
-                }
-            }
-        }
+            } as IPepGenericFormDataViewField;
 
-        const resourceField: BaseFormDataViewField =
+        const resourceField: IPepGenericFormDataViewField =
             {
                 "FieldID": "Resource",
                 "Type": "ComboBox",
@@ -226,10 +226,10 @@ export class FilterFormService {
                         "Height": 0
                     }
                 }
-            } as BaseFormDataViewField;
+            } as IPepGenericFormDataViewField;
 
         // haha fieldFieldFieldFieldFieldFieldFieldFi....
-        const fieldField: BaseFormDataViewField = {
+        const fieldField: IPepGenericFormDataViewField = {
             "FieldID": "Field",
             "Type": "ComboBox",
             "OptionalValues": this.getFieldOptions(),
@@ -253,9 +253,9 @@ export class FilterFormService {
                     "Vertical": "Stretch"
                 }
             }
-        } as BaseFormDataViewField;
+        } as IPepGenericFormDataViewField;
 
-        const separatorField: BaseFormDataViewField = {
+        const separatorField: IPepGenericFormDataViewField = {
             "FieldID": "FilterRuleSeparator",
             "Type": "Separator",
             "Title": "Filter rule",
@@ -277,10 +277,10 @@ export class FilterFormService {
                     "Vertical": "Stretch"
                 }
             }
-        }
+        } as IPepGenericFormDataViewField;
 
         // haha previousFieldFieldFieldFieldFieldFi...
-        const previousFieldField: BaseFormDataViewField = {
+        const previousFieldField: IPepGenericFormDataViewField = {
             "FieldID": "PreviousField",
             "Type": "ComboBox",
             "OptionalValues": this.getPreviousFieldOptions(),
@@ -304,9 +304,9 @@ export class FilterFormService {
                     "Vertical": "Stretch"
                 }
             }
-        } as BaseFormDataViewField;
+        } as IPepGenericFormDataViewField;
 
-        const previousFilterField: BaseFormDataViewField = {
+        const previousFilterField: IPepGenericFormDataViewField = {
             "FieldID": "PreviousFilterName",
             "Type": "ComboBox",
             "OptionalValues": this.getPreviousFilterOptions(),
@@ -330,7 +330,7 @@ export class FilterFormService {
                     "Vertical": "Stretch"
                 }
             }
-        } as BaseFormDataViewField;
+        } as IPepGenericFormDataViewField;
 
         return {
             "Type": "Form",
