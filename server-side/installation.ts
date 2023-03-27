@@ -42,8 +42,8 @@ export async function uninstall(client: Client, request: Request): Promise<any> 
 export async function upgrade(client: Client, request: Request): Promise<any> {
     try {
         console.log(`upgrade from version ${request.body.FromVersion} to version ${request.body.ToVersion}`);
-        // if we are upgrading from version < 0.0.54, we need to update the FilterRules permissionSet
-        //if (request.body.FromVersion && semver.compare(request.body.FromVersion, '0.0.54') < 0) {
+        // if we are upgrading from version < 0.0.55, we need to update the FilterRules permissionSet
+        //if (request.body.FromVersion && semver.compare(request.body.FromVersion, '0.0.55') < 0) {
         const filterRuleService = new FilterRuleService(client);
         await filterRuleService.upsertPermissionSet();
         //}
