@@ -41,6 +41,7 @@ export interface FilterRule extends AddonData {
     Resource: string;
     Filter: string;
     AddonUUID?: string;
+    PermissionSet?: "Sync" | "Online"; // default is "Sync"
 }
 
 /**

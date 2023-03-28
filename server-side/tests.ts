@@ -135,7 +135,7 @@ export async function fomo_tests(client: Client, request: Request) {
                     expect(res).to.have.property('Field').to.equal(filterObject.Field);
                 });
                 it('update', async () => {
-                    const changedFilterObject = await filterObjectService.createObject({ Key: filterObject.Key });
+                    const changedFilterObject = await filterObjectService.createObject({ Key: filterObject.Key! });
                     const res = await filterObjectService.upsert(changedFilterObject);
                     expect(res).to.be.an('object');
                     const res2: FilterObject | undefined = await filterObjectService.getByKey(filterObject.Key!);
@@ -273,6 +273,8 @@ export async function fomo_tests(client: Client, request: Request) {
                     expect(res).to.have.property('EmployeeType').to.equal(filterRule.EmployeeType);
                     expect(res).to.have.property('Filter').to.equal(filterRule.Filter);
                     expect(res).to.have.property('Resource').to.equal(filterRule.Resource);
+                    // should have default value for PermissionSet = "Sync"
+                    expect(res).to.have.property('PermissionSet').to.equal('Sync');
                     filterRule = res;
                 });
                 it('get', async () => {
@@ -282,9 +284,10 @@ export async function fomo_tests(client: Client, request: Request) {
                     expect(res).to.have.property('EmployeeType').to.equal(filterRule.EmployeeType);
                     expect(res).to.have.property('Filter').to.equal(filterRule.Filter);
                     expect(res).to.have.property('Resource').to.equal(filterRule.Resource);
+                    expect(res).to.have.property('PermissionSet').to.equal('Sync');
                 });
                 it('update', async () => {
-                    const changedFilterRule = await filterRuleService.createObject({ Key: filterRule.Key });
+                    const changedFilterRule = await filterRuleService.createObject({ Key: filterRule.Key, PermissionSet: 'Online' });
                     const res = await filterRuleService.upsert(changedFilterRule);
                     expect(res).to.be.an('object');
                     const res2: FilterRule | undefined = await filterRuleService.getByKey(filterRule.Key!);
@@ -293,6 +296,7 @@ export async function fomo_tests(client: Client, request: Request) {
                     expect(res2).to.have.property('EmployeeType').to.equal(changedFilterRule.EmployeeType);
                     expect(res2).to.have.property('Filter').to.equal(changedFilterRule.Filter);
                     expect(res2).to.have.property('Resource').to.equal(changedFilterRule.Resource);
+                    expect(res2).to.have.property('PermissionSet').to.equal(changedFilterRule.PermissionSet);
                     filterRule = res2 as FilterRule;
                 });
                 it('delete', async () => {
@@ -351,6 +355,13 @@ export async function fomo_tests(client: Client, request: Request) {
                     const res = await filterRuleService.upsert(filterRule);
                     const filterRule2 = await filterRuleService.createObject();
                     await expect(filterRuleService.upsert(filterRule2)).eventually.to.be.rejectedWith('Profile and resource combination must be unique');
+                });
+                describe('PermissionSet validation', () => {
+                    it('Insert with invalid PermissionSet', async () => {
+                        const filterRule = await filterRuleService.createObject();
+                        (filterRule.PermissionSet as any) = 'InvalidPermissionSet';
+                        await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
+                    });
                 });
                 it('Clean', async () => {
                     await cleanup();

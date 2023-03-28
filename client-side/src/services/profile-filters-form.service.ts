@@ -27,6 +27,7 @@ export class ProfileFiltersFormService {
             Resource: '',
             Filter: ''
         };
+        this.filterRule.PermissionSet = "Sync";
         this.mode = filterRule ? 'Edit' : 'Add';
     }
 

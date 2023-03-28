@@ -104,6 +104,46 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
         await this.validateFilter(addonData);
     }
 
+    async upsert(addonData: FilterRule, system: boolean = false): Promise<FilterRule> {
+        // add default value to PermissionSet field
+        addonData.PermissionSet = addonData.PermissionSet || "Sync";
+
+        // call the base class upsert
+        try {
+            return await super.upsert(addonData, system);
+        }
+        catch (ex) {
+            console.error(`Error in FilterRuleService.upsert: ${ex}`);
+            throw ex;
+        }
+    }
+
+    async upsertPermissionSet(): Promise<void> {
+        console.log("Updating old filter rules permission set...");
+        // get all filter rules
+        const oldFilterRules: FilterRule[] = await this.get({ page_size: -1 });
+
+        // update the permission set of the old filter rules
+        const updatedFilterRules: FilterRule[] = oldFilterRules.map((oldFilterRule) => {
+            oldFilterRule.PermissionSet = "Sync";
+            return oldFilterRule;
+        })
+
+        // upsert the filterRules
+        try {
+            const MAX_PARALLEL = 5;
+
+            await Promise.map(updatedFilterRules, async (filterRule) => {
+                await this.upsert(filterRule);
+            }, { concurrency: MAX_PARALLEL });
+            console.log("Updating old filter rules permission set completed successfully");
+        }
+        catch (ex) {
+            console.error(`Error while updating old filter rules permission set: ${ex}`);
+            throw ex;
+        }
+    }
+
     async upsertBasicFilterRules(basicFilterRuleData: BasicFilterRuleData[]): Promise<void> {
         // upsert a filter rule for each employee type for each basicFilterRuleData
         const filterRules: FilterRule[] = [];
@@ -112,7 +152,8 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
                 filterRules.push({
                     Resource: basicFilterRule.Resource,
                     EmployeeType: (employeeType as 1 | 2 | 3),
-                    Filter: basicFilterRule.Key
+                    Filter: basicFilterRule.Key,
+                    PermissionSet: "Sync"
                 });
             }
         });

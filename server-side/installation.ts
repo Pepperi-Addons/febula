@@ -13,6 +13,7 @@ import { BasicFilterRuleData } from '../shared/types';
 import { FilterObjectService } from './services/filter-object.service';
 import { FilterRuleService } from './services/filter-rule.service';
 import { RelationsService } from './services/relations.service';
+import semver from 'semver';
 
 export async function install(client: Client, request: Request): Promise<any> {
     try {
@@ -28,7 +29,7 @@ export async function install(client: Client, request: Request): Promise<any> {
         const basicFilterRuleData: BasicFilterRuleData[] = await filterObjectService.upsertBasicFilterObjects();
         await filterRuleService.upsertBasicFilterRules(basicFilterRuleData);
     } catch (err) {
-        throw new Error(`Failed to create relations. error - ${err}`);
+        throw new Error(`installation failed. error - ${err}`);
     }
 
     return { success: true, resultObject: {} };
@@ -39,9 +40,22 @@ export async function uninstall(client: Client, request: Request): Promise<any> 
 }
 
 export async function upgrade(client: Client, request: Request): Promise<any> {
-    const relationService = new RelationsService(client);
-    await relationService.upsertRelations();
-    return { success: true, resultObject: {} }
+    try {
+        console.log(`upgrade from version ${request.body.FromVersion} to version ${request.body.ToVersion}`);
+        // if we are upgrading from version < 0.0.55, we need to update the FilterRules permissionSet
+        //if (request.body.FromVersion && semver.compare(request.body.FromVersion, '0.0.55') < 0) {
+        const filterRuleService = new FilterRuleService(client);
+        await filterRuleService.upsertPermissionSet();
+        //}
+        const relationService = new RelationsService(client);
+        await relationService.upsertRelations();
+        return { success: true, resultObject: {} }
+
+    }
+    catch (ex) {
+        console.error(`upgrade failed. error - ${ex}`);
+        throw ex;
+    }
 }
 
 export async function downgrade(client: Client, request: Request): Promise<any> {
