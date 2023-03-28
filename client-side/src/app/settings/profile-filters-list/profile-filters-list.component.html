@@ -1,6 +1,6 @@
 <pep-page-layout>
     <ng-container pep-main-area>
-        <pep-generic-list [hideSelectAll]="true" [showSearch]="true" title="Sync-Filters" [dataSource]="listDataSource"
+        <pep-generic-list [hideSelectAll]="true" [showSearch]="true" [title]="title" [dataSource]="listDataSource"
             [uuidMapping]="'Key'" [actions]="actions" [showTopBar]="true" [selectionType]="'multi'" [inline]="false"
             [noDataFoundMsg]="'No Data Found'" [description]="'Define rules for resource sync filter per profile.'">
             <ng-container right-buttons>

@@ -63,13 +63,13 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
     }
 
     async validateProfileFilterCombination(addonData: FilterRule): Promise<void> {
-        // validate that the combination of profile and filter is unique
-        const filterRules = await this.get({ where: `Resource like '${addonData.Resource}' and EmployeeType=${addonData.EmployeeType}` })
+        // validate that the combination of profile - resource - PermissionSet is unique
+        const filterRules = await this.get({ where: `Resource like '${addonData.Resource}' and EmployeeType=${addonData.EmployeeType} and PermissionSet like '${addonData.PermissionSet}'` })
         if (filterRules.length > 0) {
             // check if the filter is the same by comparing the keys
             const filterRule = filterRules[0];
             if (filterRule.Key !== addonData.Key) {
-                throw new Error(`Validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nProfile and resource combination must be unique.`);
+                throw new Error(`Validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nProfile - Resource - PermissionSet combination must be unique. The combination is already used by filter rule with key: ${filterRule.Key}`);
             }
         }
     }
@@ -123,8 +123,11 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
         // get all filter rules
         const oldFilterRules: FilterRule[] = await this.get({ page_size: -1 });
 
+        // filter the filter rules that have no PermissionSet field
+        const oldFilterRulesWithoutPermissionSet = oldFilterRules.filter((oldFilterRule) => !oldFilterRule.PermissionSet);
+
         // update the permission set of the old filter rules
-        const updatedFilterRules: FilterRule[] = oldFilterRules.map((oldFilterRule) => {
+        const updatedFilterRules: FilterRule[] = oldFilterRulesWithoutPermissionSet.map((oldFilterRule) => {
             oldFilterRule.PermissionSet = "Sync";
             return oldFilterRule;
         })
@@ -154,6 +157,12 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
                     EmployeeType: (employeeType as 1 | 2 | 3),
                     Filter: basicFilterRule.Key,
                     PermissionSet: "Sync"
+                });
+                filterRules.push({
+                    Resource: basicFilterRule.Resource,
+                    EmployeeType: (employeeType as 1 | 2 | 3),
+                    Filter: basicFilterRule.Key,
+                    PermissionSet: "Online"
                 });
             }
         });

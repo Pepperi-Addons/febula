@@ -350,11 +350,20 @@ export async function fomo_tests(client: Client, request: Request) {
                         await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Filter validation failed');
                     });
                 });
-                it('insert with an existing combination of employee type and resource', async () => {
+                it('insert with an existing combination of employee type and resource and same permissionSet', async () => {
+                    // this should not work
                     const filterRule = await filterRuleService.createObject();
                     const res = await filterRuleService.upsert(filterRule);
+                    // sleep for 1 second to make sure everything is updated
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                     const filterRule2 = await filterRuleService.createObject();
-                    await expect(filterRuleService.upsert(filterRule2)).eventually.to.be.rejectedWith('Profile and resource combination must be unique');
+                    await expect(filterRuleService.upsert(filterRule2)).eventually.to.be.rejectedWith('Profile - Resource - PermissionSet combination must be unique.');
+                });
+                it('insert with an existing combination of employee type and resource and different permissionSet', async () => {
+                    // this should now work
+                    const filterRule = await filterRuleService.createObject({ PermissionSet: 'Online' });
+                    const res = await filterRuleService.upsert(filterRule);
+                    expect(res).to.be.an('object');
                 });
                 describe('PermissionSet validation', () => {
                     it('Insert with invalid PermissionSet', async () => {

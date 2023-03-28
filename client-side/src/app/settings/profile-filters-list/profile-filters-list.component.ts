@@ -1,11 +1,11 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, Input, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { TranslateService } from '@ngx-translate/core';
 import { PepAddonService, PepLayoutService, PepScreenSizeType } from '@pepperi-addons/ngx-lib';
 import { PepSelectionData } from '@pepperi-addons/ngx-lib/list';
 import { IPepGenericListDataSource, IPepGenericListActions } from "@pepperi-addons/ngx-composite-lib/generic-list";
 import { FomoService } from "src/services/fomo.service";
-import { FilterObject, FilterRule } from "../../../../../shared/types";
+import { FilterObject, FilterRule, PermissionSetValues } from "../../../../../shared/types";
 import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
 import { ProfileFiltersFormComponent } from "../profile-filters-form/profile-filters-form.component";
 import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
@@ -17,7 +17,7 @@ import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
     styleUrls: ['./profile-filters-list.component.scss']
 })
 export class ProfileFiltersListComponent implements OnInit {
-
+    @Input() permissionType: PermissionSetValues;
     screenSize: PepScreenSizeType;
     fomoService: FomoService;
     filterRulesMap: Map<string, FilterRule> = new Map<string, FilterRule>();
@@ -25,6 +25,7 @@ export class ProfileFiltersListComponent implements OnInit {
     filterObjects?: FilterObject[] = undefined;
     resources?: Collection[] = undefined;
     filterKeyToNameMap: Map<string, string> = new Map<string, string>();
+    title: string
 
 
     constructor(
@@ -40,6 +41,7 @@ export class ProfileFiltersListComponent implements OnInit {
             this.screenSize = size;
         });
         this.fomoService = new FomoService(this.pepAddonService);
+        this.title = `${this.permissionType}-Filters`
     }
 
     ngOnInit() {
@@ -56,7 +58,7 @@ export class ProfileFiltersListComponent implements OnInit {
         config.data = new PepDialogData({
             content: ProfileFiltersFormComponent,
         })
-        this.dialogService.openDialog(ProfileFiltersFormComponent, { ...data, filterRuleList: this.filterRules, filterObjectList: this.filterObjects, resourceList: this.resources }, config).afterClosed().subscribe((value) => {
+        this.dialogService.openDialog(ProfileFiltersFormComponent, { ...data, filterRuleList: this.filterRules, filterObjectList: this.filterObjects, resourceList: this.resources, permissionType: this.permissionType }, config).afterClosed().subscribe((value) => {
             if (value) {
                 console.log(JSON.stringify(value));
                 this.listDataSource = this.getDataSource(true);
@@ -108,7 +110,8 @@ export class ProfileFiltersListComponent implements OnInit {
 
     async updateFilterRules() {
         try {
-            this.filterRules = await this.fomoService.getFilterRules();
+            const allFilterRules = await this.fomoService.getFilterRules();
+            this.filterRules = allFilterRules.filter(filterRule => filterRule.PermissionSet === this.permissionType);
             this.updateFilterRulesMap(this.filterRules);
             const keyList = this.filterRules.map(filterRule => filterRule.Filter);
             const uniqueKeys = Array.from(new Set(keyList));
