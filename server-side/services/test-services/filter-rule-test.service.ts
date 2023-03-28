@@ -1,5 +1,5 @@
 import { Client } from "@pepperi-addons/debug-server/dist";
-import { FilterRule } from "../../../shared/types";
+import { FilterRule, PermissionSetValues } from "../../../shared/types";
 import { BasicTableTestService } from "./basic-table-test.service";
 import { FilterObjectTestService } from "./filter-object-test.service";
 
@@ -18,7 +18,7 @@ export class FilterRuleTestService extends BasicTableTestService<FilterRule>{
         EmployeeType?: 1 | 2 | 3,
         Resource?: string,
         Filter?: string,
-        PermissionSet?: "Sync" | "Online"
+        PermissionSet?: PermissionSetValues
     }): Promise<FilterRule> {
         const filterRule: FilterRule = {
             Key: options?.Key || undefined,

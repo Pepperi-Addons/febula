@@ -34,6 +34,8 @@ export interface FilterObject extends AddonData {
  * Filter: string; - Key of the filter object we wish to filter by for this resource and profile.
  * 
  * AddonUUID?: string; - UUID of the owner of this filter rule
+ * 
+ * PermissionSet?: "Sync" | "Online"; - Permission set of the filter rule. Default is "Sync"
  */
 export interface FilterRule extends AddonData {
     Key?: string;
@@ -41,8 +43,10 @@ export interface FilterRule extends AddonData {
     Resource: string;
     Filter: string;
     AddonUUID?: string;
-    PermissionSet?: "Sync" | "Online"; // default is "Sync"
+    PermissionSet?: PermissionSetValues;
 }
+
+export type PermissionSetValues = "Sync" | "Online"; // default is "Sync"
 
 /**
  * Key?: string; - Key of the basic filter object (UUID)

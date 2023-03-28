@@ -1,7 +1,7 @@
 import { IPepGenericFormDataView, IPepGenericFormDataViewField } from "@pepperi-addons/ngx-composite-lib/generic-form";
 import { PepAddonService } from "@pepperi-addons/ngx-lib";
 import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
-import { FilterObject, FilterRule } from "../../../shared/types";
+import { FilterObject, FilterRule, PermissionSetValues } from "../../../shared/types";
 import { FomoService } from "./fomo.service";
 
 export class ProfileFiltersFormService {
@@ -17,7 +17,7 @@ export class ProfileFiltersFormService {
     private filterObjectList: FilterObject[];
     private filterRuleList: FilterRule[];
 
-    constructor(private pepAddonService: PepAddonService, filterRuleList: FilterRule[], filterObjectList: FilterObject[], resourceList: Collection[], filterRule?: FilterRule) {
+    constructor(private pepAddonService: PepAddonService, filterRuleList: FilterRule[], filterObjectList: FilterObject[], resourceList: Collection[], filterRule?: FilterRule, permissionType?: PermissionSetValues) {
         this.fomoService = new FomoService(pepAddonService);
         this.filterRuleList = filterRuleList;
         this.filterObjectList = filterObjectList;
@@ -27,7 +27,7 @@ export class ProfileFiltersFormService {
             Resource: '',
             Filter: ''
         };
-        this.filterRule.PermissionSet = "Sync";
+        this.filterRule.PermissionSet = permissionType;
         this.mode = filterRule ? 'Edit' : 'Add';
     }
 
@@ -63,7 +63,7 @@ export class ProfileFiltersFormService {
 
     private setResourceOptions() {
 
-        // predicate that takes a resource and returns true only if there isn't a filter rule with the same resource and profile (as the profile in this.filterRule)
+        // predicate that takes a resource and returns true only if there isn't a filter rule with the same resource and profile (as the profile in this.filterRule).
         const filterProfileFilterCombination = (resource: Collection) => {
             return !this.filterRuleList.some((filterRule) => filterRule.Resource === resource.Name && filterRule.EmployeeType === this.filterRule.EmployeeType);
         }

@@ -12,7 +12,10 @@
                 <filters-list></filters-list>
             </mat-tab>
             <mat-tab label="{{ 'Sync-Filters' | translate }}">
-                <profile-filters-list></profile-filters-list>
+                <profile-filters-list [permissionType]="'Sync'"></profile-filters-list>
+            </mat-tab>
+            <mat-tab label="{{ 'Online-Filters' | translate }}">
+                <profile-filters-list [permissionType]="'Online'"></profile-filters-list>
             </mat-tab>
         </mat-tab-group>
     </ng-container>

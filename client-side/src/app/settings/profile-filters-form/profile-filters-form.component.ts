@@ -7,7 +7,7 @@ import { PepAddonService, PepLayoutService, PepScreenSizeType } from '@pepperi-a
 import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
 import { ProfileFiltersFormService } from "src/services/profile-filters-form.service";
-import { FilterObject, FilterRule } from "../../../../../shared/types";
+import { FilterObject, FilterRule, PermissionSetValues } from "../../../../../shared/types";
 
 @Component({
     selector: 'profile-filters-form',
@@ -45,13 +45,13 @@ export class ProfileFiltersFormComponent implements OnInit {
         public router: Router,
         public activatedRoute: ActivatedRoute,
         public pepAddonService: PepAddonService,
-        @Inject(MAT_DIALOG_DATA) public incoming: { filterObjectList: FilterObject[], filterRuleList: FilterRule[], resourceList: Collection[], filterRule?: FilterRule }
+        @Inject(MAT_DIALOG_DATA) public incoming: { filterObjectList: FilterObject[], filterRuleList: FilterRule[], resourceList: Collection[], permissionType: PermissionSetValues, filterRule?: FilterRule }
     ) {
         this.layoutService.onResize$.subscribe(size => {
             this.screenSize = size;
         });
         this.profileFiltersTitle = incoming?.filterRule ? `Edit Profile-Filter` : `Create new Profile-Filter`;
-        this.profileFiltersFormService = new ProfileFiltersFormService(this.pepAddonService, incoming.filterRuleList, incoming.filterObjectList, incoming.resourceList, incoming.filterRule);
+        this.profileFiltersFormService = new ProfileFiltersFormService(this.pepAddonService, incoming.filterRuleList, incoming.filterObjectList, incoming.resourceList, incoming.filterRule, incoming.permissionType);
     }
 
     dataSource: FilterRule;
