@@ -9,7 +9,7 @@ import { ActivatedRoute } from '@angular/router';
 export class SettingsTabsComponent implements OnInit {
 
 
-    activeTabIndex = 0;
+    currentTabIndex : 0 | 1 | 2 = 0;
     hostEvents: any;
 
 
@@ -21,11 +21,10 @@ export class SettingsTabsComponent implements OnInit {
     }
 
     async ngOnInit() {
-        this.activeTabIndex = 0;
     }
 
-    tabClick(e) {
-        this.activeTabIndex = e.index;
+    onTabChange($event) {
+        this.currentTabIndex = $event.index;
     }
 
 }
