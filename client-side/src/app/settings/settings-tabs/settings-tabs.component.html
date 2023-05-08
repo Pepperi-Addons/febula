@@ -7,15 +7,15 @@
         </pep-top-bar>
     </ng-container>
     <ng-container pep-main-area>
-        <mat-tab-group>
+        <mat-tab-group (selectedTabChange)="onTabChange($event)">
             <mat-tab label="{{ 'Filters' | translate }}">
-                <filters-list></filters-list>
+                <filters-list *ngIf="currentTabIndex == 0"></filters-list>
             </mat-tab>
             <mat-tab label="{{ 'Sync-Filters' | translate }}">
-                <profile-filters-list [permissionType]="'Sync'"></profile-filters-list>
+                <profile-filters-list *ngIf="currentTabIndex == 1" [permissionType]="'Sync'"></profile-filters-list>
             </mat-tab>
             <mat-tab label="{{ 'Online-Filters' | translate }}">
-                <profile-filters-list [permissionType]="'Online'"></profile-filters-list>
+                <profile-filters-list *ngIf="currentTabIndex == 2" [permissionType]="'Online'"></profile-filters-list>
             </mat-tab>
         </mat-tab-group>
     </ng-container>
