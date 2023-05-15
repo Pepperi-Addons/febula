@@ -50,7 +50,7 @@ export class ProfileFiltersFormComponent implements OnInit {
         this.layoutService.onResize$.subscribe(size => {
             this.screenSize = size;
         });
-        this.profileFiltersTitle = incoming?.filterRule ? `Edit Profile-Filter` : `Create new Profile-Filter`;
+        this.profileFiltersTitle = incoming?.filterRule ? `Edit Profile-Filter` : `Create New Profile-Filter`;
         this.profileFiltersFormService = new ProfileFiltersFormService(this.pepAddonService, incoming.filterRuleList, incoming.filterObjectList, incoming.resourceList, incoming.filterRule, incoming.permissionType);
     }
 
