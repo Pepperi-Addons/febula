@@ -50,7 +50,7 @@ export class FilterFormComponent implements OnInit {
         this.layoutService.onResize$.subscribe(size => {
             this.screenSize = size;
         });
-        this.filterTitle = incoming.filterObject ? `Edit Filter ${incoming.filterObject.Name}` : "Create new Filter";
+        this.filterTitle = incoming.filterObject ? `Edit Filter ${incoming.filterObject.Name}` : "Create New Filter";
         this.filterFormService = new FilterFormService(this.pepAddonService, incoming.filterObjectList, incoming.resourceList, incoming.filterObject);
     }
 

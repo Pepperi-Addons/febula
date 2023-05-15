@@ -17,9 +17,11 @@ export class FilterFormService {
     private previousFilterOptions: string[] = [];
     private chosenResource: Collection;
     private filterObjectList: FilterObject[];
+    private allResources: Collection[];
 
     constructor(private pepAddonService: PepAddonService, filterObjectList: FilterObject[], resourceList: Collection[], filterObject?: FilterObject) {
         this.fomoService = new FomoService(pepAddonService);
+        this.allResources = resourceList;
         this.filterObjectList = filterObjectList;
         // inject "Key" field to all resources as a reference to self
         resourceList.forEach((resource) => {
@@ -66,13 +68,22 @@ export class FilterFormService {
 
     private setFieldOptions() {
         this.fieldOptions = this.filterObject.Resource ?
-            ["Key", ...Object.keys(this.chosenResource.Fields).filter((field) => this.chosenResource.Fields[field].Type === 'Resource')] :
+            Object.keys(this.chosenResource.Fields).filter((field) => this.chosenResource.Fields[field].Type === 'Resource') :
             [];
+    }
+
+    private getPreviousFiltersOfField(fieldName: string) {
+        if (!this.chosenResource || !this.chosenResource.Fields[fieldName]) {
+            return [];
+        }
+        const previousFieldResourceName = this.chosenResource.Fields[fieldName].Resource;
+        const previousFilters = this.getFilterObjectsOfResource(previousFieldResourceName);
+        return previousFilters;
     }
 
     // same as setFieldOptions only excludes the field that was chosen as the previous field or the "Key" field
     private setPreviousFieldOptions() {
-        this.previousFieldOptions = this.filterObject.Field ? this.fieldOptions.filter((field) => field !== this.filterObject.Field && field !== 'Key') : [];
+        this.previousFieldOptions = this.filterObject.Field ? this.fieldOptions.filter((field) => field !== this.filterObject.Field && field !== 'Key' && this.getPreviousFiltersOfField(field).length > 0) : [];
     }
 
     private setPreviousFilterOptions() {
@@ -80,15 +91,14 @@ export class FilterFormService {
             this.previousFilterOptions = [];
             return;
         }
-        const previousFieldResourceName = this.chosenResource.Fields[this.filterObject.PreviousField].Resource;
-        this.previousFilters = this.getFilterObjectsOfResource(previousFieldResourceName);
+        this.previousFilters = this.getPreviousFiltersOfField(this.filterObject.PreviousField);
         this.previousFilterOptions = this.previousFilters.map((filter) => filter.Name);
     }
 
     // returns the filter objects for which their Field field references the given resource name
     getFilterObjectsOfResource(previousFieldResourceName: string): FilterObject[] {
         const filterObjects = this.filterObjectList.filter((filterObject) => {
-            const resource = this.resources.find((resource) => resource.Name === filterObject.Resource);
+            const resource = this.allResources.find((resource) => resource.Name === filterObject.Resource);
             return resource?.Fields[filterObject.Field].Resource === previousFieldResourceName;
         });
         return filterObjects;

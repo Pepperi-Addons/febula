@@ -41,10 +41,10 @@ export class ProfileFiltersListComponent implements OnInit {
             this.screenSize = size;
         });
         this.fomoService = new FomoService(this.pepAddonService);
-        this.title = `${this.permissionType}-Filters`
     }
 
     ngOnInit() {
+        this.title = `${this.permissionType}-Filters`
     }
 
 
