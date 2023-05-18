@@ -63,9 +63,9 @@ export class ProfileFiltersFormService {
 
     private setResourceOptions() {
 
-        // predicate that takes a resource and returns true only if there isn't a filter rule with the same resource and profile (as the profile in this.filterRule).
+        // predicate that takes a resource and returns true only if there isn't a filter rule with the same resource and profile (as the profile in this.filterRule). this does not apply for PermissionSet=Online and will always return true in that case
         const filterProfileFilterCombination = (resource: Collection) => {
-            return !this.filterRuleList.some((filterRule) => filterRule.Resource === resource.Name && filterRule.EmployeeType === this.filterRule.EmployeeType);
+            return this.filterRule.PermissionSet == "Online" || !this.filterRuleList.some((filterRule) => filterRule.Resource === resource.Name && filterRule.EmployeeType === this.filterRule.EmployeeType);
         }
 
         // a predicate that takes a resource and returns true only if there is at least another resource with a Resource field that points to it
@@ -80,11 +80,6 @@ export class ProfileFiltersFormService {
     }
 
     private setFilterOptions() {
-        // predicate that takes a filter object and returns true only if its resource is the same as the chosen resource
-        const filterByResource = (filterObject: FilterObject) => {
-            return filterObject.Resource === this.chosenResource.Name;
-        }
-
         // predicate that takes a filter object and returns true only if its "Field" field is a resource field that points to the chosen resource. However, if the Field=Key, it should be considered as a reference to the resource itself
         const filterByResourceField = (filterObject: FilterObject) => {
             const field = filterObject.Field;
@@ -96,7 +91,12 @@ export class ProfileFiltersFormService {
                 resource && resource.Fields && Object.keys(resource.Fields).some((fieldKey) => fieldKey === field && resource.Fields[fieldKey].Type === 'Resource' && resource.Fields[fieldKey].Resource === this.chosenResource.Name);
         }
 
-        this.filterOptions = this.filterRule.Resource ? this.filterObjectList.filter((filterObject) => filterByResourceField(filterObject)).map((filterObject) => filterObject.Name) : [];
+        // predicate that takes a filter object and returns true only if there isn't a filter rule with the same resource, profile, permissionSet and filter (as the filter in this.filterRule).
+        const filterProfileFilterCombination = (filterObject: FilterObject) => {
+            return !this.filterRuleList.some((filterRule) => filterRule.Resource === this.filterRule.Resource && filterRule.EmployeeType === this.filterRule.EmployeeType && filterRule.PermissionSet === this.filterRule.PermissionSet && filterRule.Filter === filterObject.Key);
+        }
+
+        this.filterOptions = this.filterRule.Resource ? this.filterObjectList.filter((filterObject) => filterByResourceField(filterObject) && filterProfileFilterCombination(filterObject)).map((filterObject) => filterObject.Name) : [];
     }
 
     init(): void {
