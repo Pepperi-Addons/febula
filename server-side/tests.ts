@@ -350,18 +350,24 @@ export async function fomo_tests(client: Client, request: Request) {
                         await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Filter validation failed');
                     });
                 });
-                it('insert with an existing combination of employee type and resource and same permissionSet', async () => {
+                it('insert with an existing combination of employee type and resource and same permissionSet = Sync', async () => {
                     // this should not work
-                    const filterRule = await filterRuleService.createObject();
+                    const filterRule = await filterRuleService.createObject({EmployeeType: 1}); // PermissionSet = Sync by default
                     const res = await filterRuleService.upsert(filterRule);
                     // sleep for 1 second to make sure everything is updated
                     await new Promise(resolve => setTimeout(resolve, 1000));
-                    const filterRule2 = await filterRuleService.createObject();
-                    await expect(filterRuleService.upsert(filterRule2)).eventually.to.be.rejectedWith('Profile - Resource - PermissionSet combination must be unique.');
+                    const filterRule2 = await filterRuleService.createObject({EmployeeType: 1});
+                    await expect(filterRuleService.upsert(filterRule2)).eventually.to.be.rejectedWith('Profile - Resource combination must be unique.');
                 });
                 it('insert with an existing combination of employee type and resource and different permissionSet', async () => {
                     // this should now work
-                    const filterRule = await filterRuleService.createObject({ PermissionSet: 'Online' });
+                    const filterRule = await filterRuleService.createObject({ PermissionSet: 'Online', EmployeeType: 1 });
+                    const res = await filterRuleService.upsert(filterRule);
+                    expect(res).to.be.an('object');
+                });
+                it('insert with an existing combination of employee type and resource and same permissionSet = Online', async () => {
+                    // this should work because same combination is allowed for permissionSet = Online
+                    const filterRule = await filterRuleService.createObject({ PermissionSet: 'Online', EmployeeType: 1 });
                     const res = await filterRuleService.upsert(filterRule);
                     expect(res).to.be.an('object');
                 });

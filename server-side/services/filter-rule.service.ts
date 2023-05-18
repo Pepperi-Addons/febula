@@ -63,13 +63,17 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
     }
 
     async validateProfileFilterCombination(addonData: FilterRule): Promise<void> {
-        // validate that the combination of profile - resource - PermissionSet is unique
+        // validate that the combination of profile - resource is unique
+        // this applies only to "Sync" permission set
+        if (addonData.PermissionSet !== "Sync") {
+            return;
+        }
         const filterRules = await this.get({ where: `Resource like '${addonData.Resource}' and EmployeeType=${addonData.EmployeeType} and PermissionSet like '${addonData.PermissionSet}'` })
         if (filterRules.length > 0) {
             // check if the filter is the same by comparing the keys
             const filterRule = filterRules[0];
             if (filterRule.Key !== addonData.Key) {
-                throw new Error(`Validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\nProfile - Resource - PermissionSet combination must be unique. The combination is already used by filter rule with key: ${filterRule.Key}`);
+                throw new Error(`Validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\n for "Sync" PermissionSet, Profile - Resource combination must be unique. The combination is already used by filter rule with key: ${filterRule.Key}`);
             }
         }
     }
