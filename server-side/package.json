@@ -28,7 +28,7 @@
         "typescript": "^4.8.4"
     },
     "dependencies": {
-        "@pepperi-addons/addon-testing-framework": "^0.0.14",
+        "@pepperi-addons/addon-testing-framework": "^0.0.17",
         "@pepperi-addons/debug-server": "*",
         "@pepperi-addons/papi-sdk": "*",
         "@types/chai-as-promised": "^7.1.5",

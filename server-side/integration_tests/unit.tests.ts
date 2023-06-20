@@ -4,10 +4,6 @@ import { AddonDataScheme, Collection, PapiClient } from '@pepperi-addons/papi-sd
 import { FilterObject, FilterRule } from '../../shared/types';
 import { FilterObjectTestService } from '../services/test-services/filter-object-test.service';
 import { FilterRuleTestService } from '../services/test-services/filter-rule-test.service';
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-chai.use(chaiAsPromised);
-const expectAsPromised = chai.expect;
 
 export class UnitTests extends BaseTest {
     title = 'Febula Unit Tests';
@@ -125,7 +121,7 @@ export class UnitTests extends BaseTest {
                             const filterObject = await filterObjectService.createObject();
                             // @ts-ignore
                             delete filterObject.Name;
-                            await expectAsPromised(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
+                            await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
                         });
                     });
                     describe('Resource validation', () => {
@@ -133,12 +129,12 @@ export class UnitTests extends BaseTest {
                             const filterObject = await filterObjectService.createObject();
                             // @ts-ignore
                             delete filterObject.Resource;
-                            await expectAsPromised(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
+                            await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
                         });
                         it('Insert with invalid resource', async () => {
                             const filterObject = await filterObjectService.createObject();
                             filterObject.Resource = 'invalid';
-                            await expectAsPromised(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Resource validation failed');
+                            await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Resource validation failed');
                         });
                     });
                     describe('Field validation', () => {
@@ -146,17 +142,17 @@ export class UnitTests extends BaseTest {
                             const filterObject = await filterObjectService.createObject();
                             // @ts-ignore
                             delete filterObject.Field;
-                            await expectAsPromised(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
+                            await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
                         });
                         it('insert with field that does not exist in resource', async () => {
                             const filterObject = await filterObjectService.createObject();
                             filterObject.Field = 'invalid';
-                            await expectAsPromised(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Field validation failed');
+                            await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Field validation failed');
                         });
                         it('insert with field that is not a reference', async () => {
                             const filterObject = await filterObjectService.createObject();
                             filterObject.Field = 'StringProperty';
-                            await expectAsPromised(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Field validation failed');
+                            await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Field validation failed');
                         });
                     });
                     describe('Previous field and filter validation', () => {
@@ -164,7 +160,7 @@ export class UnitTests extends BaseTest {
                         it('Insert with PreviousField and without PreviousFilter', async () => {
                             const filterObject = await filterObjectService.createObject();
                             filterObject.PreviousField = filterObjectService.testPreviousFieldName;
-                            await expectAsPromised(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
+                            await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('Scheme validation failed');
                         });
                         it('Insert with PreviousFilter and without PreviousField', async () => {
                             // first upsert a filter object
@@ -173,13 +169,13 @@ export class UnitTests extends BaseTest {
                             // upsert a filter object with PreviousFilter but without PreviousField
                             const filterObject2 = await filterObjectService.createObject();
                             filterObject2.PreviousFilter = res.Key;
-                            await expectAsPromised(filterObjectService.upsert(filterObject2)).eventually.to.be.rejectedWith('Scheme validation failed');
+                            await expect(filterObjectService.upsert(filterObject2)).eventually.to.be.rejectedWith('Scheme validation failed');
                         });
                         it('Insert with PreviousFilter and PreviousField but PreviousFilter is not found', async () => {
                             const filterObject = await filterObjectService.createObject();
                             filterObject.PreviousFilter = 'PreviousFilter';
                             filterObject.PreviousField = filterObjectService.testPreviousFieldName;
-                            await expectAsPromised(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('PreviousFilter validation failed');
+                            await expect(filterObjectService.upsert(filterObject)).eventually.to.be.rejectedWith('PreviousFilter validation failed');
                         });
                         it('Insert with PreviousFilter and PreviousField but PreviousField does not exist on resource', async () => {
                             // first upsert a filter object
@@ -189,7 +185,7 @@ export class UnitTests extends BaseTest {
                             const filterObject2 = await filterObjectService.createObject();
                             filterObject2.PreviousFilter = res.Key;
                             filterObject2.PreviousField = 'invalid';
-                            await expectAsPromised(filterObjectService.upsert(filterObject2)).eventually.to.be.rejectedWith('PreviousField validation failed');
+                            await expect(filterObjectService.upsert(filterObject2)).eventually.to.be.rejectedWith('PreviousField validation failed');
                         });
                         it('Insert with PreviousFilter and PreviousField but PreviousField is not a reference', async () => {
                             // first upsert a filter object
@@ -199,7 +195,7 @@ export class UnitTests extends BaseTest {
                             const filterObject2 = await filterObjectService.createObject();
                             filterObject2.PreviousFilter = res.Key;
                             filterObject2.PreviousField = 'StringProperty';
-                            await expectAsPromised(filterObjectService.upsert(filterObject2)).eventually.to.be.rejectedWith('PreviousField validation failed');
+                            await expect(filterObjectService.upsert(filterObject2)).eventually.to.be.rejectedWith('PreviousField validation failed');
                         });
                         it('Insert with PreviousFilter and PreviousField but the previousFilter resource is not the same as chosen field resource', async () => {
                             const secondResourceName = filterObjectService.secondaryTestResourceName;
@@ -214,7 +210,7 @@ export class UnitTests extends BaseTest {
                             filterObject2.PreviousFilter = res.Key;
                             // the field reference is to the first resource
                             filterObject2.PreviousField = filterObjectService.testPreviousFieldName;
-                            await expectAsPromised(filterObjectService.upsert(filterObject2)).eventually.to.be.rejectedWith('PreviousFilter validation failed');
+                            await expect(filterObjectService.upsert(filterObject2)).eventually.to.be.rejectedWith('PreviousFilter validation failed');
                         });
     
                     });
@@ -279,7 +275,7 @@ export class UnitTests extends BaseTest {
                             const filterRule = await filterRuleService.createObject();
                             // @ts-ignore
                             delete filterRule.EmployeeType;
-                            await expectAsPromised(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
+                            await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
                         });
                     });
                     describe('Resource validations', () => {
@@ -287,17 +283,17 @@ export class UnitTests extends BaseTest {
                             const filterRule = await filterRuleService.createObject();
                             // @ts-ignore
                             delete filterRule.Resource;
-                            await expectAsPromised(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
+                            await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
                         });
                         it('Insert with resource that is not found', async () => {
                             const filterRule = await filterRuleService.createObject();
                             filterRule.Resource = 'InvalidResource';
-                            await expectAsPromised(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Resource validation failed');
+                            await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Resource validation failed');
                         });
                         it('Insert with resource that is not referenced by another resource', async () => {
                             const filterRule = await filterRuleService.createObject();
                             filterRule.Resource = filterObjectService.thirdTestResourceName;
-                            await expectAsPromised(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Resource validation failed');
+                            await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Resource validation failed');
                         });
                     });
                     describe('Filter validations', () => {
@@ -305,12 +301,12 @@ export class UnitTests extends BaseTest {
                             const filterRule = await filterRuleService.createObject();
                             // @ts-ignore
                             delete filterRule.Filter;
-                            await expectAsPromised(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
+                            await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
                         });
                         it('Insert with filter that is not found', async () => {
                             const filterRule = await filterRuleService.createObject();
                             filterRule.Filter = 'InvalidFilter';
-                            await expectAsPromised(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Filter validation failed');
+                            await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Filter validation failed');
                         });
                     });
                     it('insert with an existing combination of employee type and resource and same permissionSet = Sync', async () => {
@@ -320,7 +316,7 @@ export class UnitTests extends BaseTest {
                         // sleep for 1 second to make sure everything is updated
                         await new Promise(resolve => setTimeout(resolve, 1000));
                         const filterRule2 = await filterRuleService.createObject({EmployeeType: 1});
-                        await expectAsPromised(filterRuleService.upsert(filterRule2)).eventually.to.be.rejectedWith('Profile - Resource combination must be unique.');
+                        await expect(filterRuleService.upsert(filterRule2)).eventually.to.be.rejectedWith('Profile - Resource combination must be unique.');
                     });
                     it('insert with an existing combination of employee type and resource and different permissionSet', async () => {
                         // this should now work
@@ -338,7 +334,7 @@ export class UnitTests extends BaseTest {
                         it('Insert with invalid PermissionSet', async () => {
                             const filterRule = await filterRuleService.createObject();
                             (filterRule.PermissionSet as any) = 'InvalidPermissionSet';
-                            await expectAsPromised(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
+                            await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Scheme validation failed');
                         });
                     });
                     it('Clean', async () => {
