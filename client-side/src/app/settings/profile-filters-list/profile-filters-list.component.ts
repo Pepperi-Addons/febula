@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from "@angular/core";
+import { Component, Input, OnInit, Output, EventEmitter, SimpleChanges, OnChanges } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { TranslateService } from '@ngx-translate/core';
 import { PepAddonService, PepLayoutService, PepScreenSizeType } from '@pepperi-addons/ngx-lib';
@@ -16,16 +16,19 @@ import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
     templateUrl: './profile-filters-list.component.html',
     styleUrls: ['./profile-filters-list.component.scss']
 })
-export class ProfileFiltersListComponent implements OnInit {
+export class ProfileFiltersListComponent implements OnInit ,OnChanges {
     @Input() permissionType: PermissionSetValues;
+    @Input() filterRules: FilterRule[];
+    @Input() resources: Collection[];
+    @Input() filterObjects: FilterObject[];
+    @Input() filterKeyToNameMap: Map<string, string>;
+    @Output() changesEvent: EventEmitter<any> = new EventEmitter<any>();
+
     screenSize: PepScreenSizeType;
     fomoService: FomoService;
     filterRulesMap: Map<string, FilterRule> = new Map<string, FilterRule>();
-    filterRules?: FilterRule[] = undefined;
-    filterObjects?: FilterObject[] = undefined;
-    resources?: Collection[] = undefined;
-    filterKeyToNameMap: Map<string, string> = new Map<string, string>();
     title: string
+    permissionFilterRules: FilterRule[] = [];
 
 
     constructor(
@@ -47,21 +50,27 @@ export class ProfileFiltersListComponent implements OnInit {
         this.title = `${this.permissionType}-Filters`
     }
 
+    ngOnChanges(changes: SimpleChanges) { 
+        this.listDataSource = this.getDataSource();
+    }
 
-    private async openAttachmentDialog(callback: (value: any) => void, data?: { filterRule: FilterRule }) {
+    emitChangesEvent() { ;
+        this.changesEvent.emit({action:"filterRuleChange"});
+    }
+
+    private openAttachmentDialog(callback: (value: any) => void, data?: { filterRule: FilterRule }) {
         //this.listDataSource = this.getDataSource(true); // update all different resources so form will have the latest data
-        await this.updateFilterObjects();
-        await this.updateResources();
-        await this.updateFilterRules();
+        this.updateFilterRules();
         const config = this.dialogService.getDialogConfig({}, 'large');
 
         config.data = new PepDialogData({
             content: ProfileFiltersFormComponent,
         })
-        this.dialogService.openDialog(ProfileFiltersFormComponent, { ...data, filterRuleList: this.filterRules, filterObjectList: this.filterObjects, resourceList: this.resources, permissionType: this.permissionType }, config).afterClosed().subscribe((value) => {
+        this.dialogService.openDialog(ProfileFiltersFormComponent, { ...data, filterRuleList: this.permissionFilterRules, filterObjectList: this.filterObjects, resourceList: this.resources, permissionType: this.permissionType }, config).afterClosed().subscribe((value) => {
             if (value) {
                 console.log(JSON.stringify(value));
-                this.listDataSource = this.getDataSource(true);
+                this.emitChangesEvent();
+                this.listDataSource = this.getDataSource();
                 callback(value);
             }
         });
@@ -97,80 +106,26 @@ export class ProfileFiltersListComponent implements OnInit {
         });
     }
 
-    updateFilterKeyToNameMap(filterObjects: FilterObject[]) {
-        filterObjects.forEach(filterObject => {
-            this.filterKeyToNameMap.set(filterObject.Key, filterObject.Name);
-        });
+    updateFilterRules() {
+        this.permissionFilterRules = this.filterRules.filter(filterRule => filterRule.PermissionSet === this.permissionType);
+        this.updateFilterRulesMap(this.filterRules);
     }
 
-    async updateFilterObjectNames(keyList: string[]) {
-        const filterObjects = await this.fomoService.getFilterObjectsByKeys(keyList);
-        this.updateFilterKeyToNameMap(filterObjects);
-    }
+    getSearchedFilterRules(searchText?: string): FilterRule[] {
+        this.updateFilterRules();
 
-    async updateFilterRules() {
-        try {
-            const allFilterRules = await this.fomoService.getFilterRules();
-            this.filterRules = allFilterRules.filter(filterRule => filterRule.PermissionSet === this.permissionType);
-            this.updateFilterRulesMap(this.filterRules);
-            const keyList = this.filterRules.map(filterRule => filterRule.Filter);
-            const uniqueKeys = Array.from(new Set(keyList));
-            await this.updateFilterObjectNames(uniqueKeys);
-        }
-        catch (ex) {
-            console.error(`updateFilterRules: ${ex}`);
-            throw ex;
-        }
-    }
-
-    async updateResources() {
-        try {
-            this.resources = await this.fomoService.getResources();
-        }
-        catch (ex) {
-            console.error(`updateResources: ${ex}`);
-            throw ex;
-        }
-    }
-
-    async updateFilterObjects() {
-        try {
-            this.filterObjects = await this.fomoService.getFilterObjects();
-        }
-        catch (ex) {
-            console.error(`updateFilterObjects: ${ex}`);
-            throw ex;
-        }
-    }
-
-    async getSearchedFilterRules(force: boolean, searchText?: string): Promise<FilterRule[]> {
-        try {
-            if (this.filterRules === undefined || force) {
-                await this.updateFilterRules();
-            }
-            if (this.filterObjects === undefined || force) {
-                await this.updateFilterObjects();
-            }
-            if (this.resources === undefined) {
-                await this.updateResources();
-            }
-        }
-        catch (ex) {
-            console.error(`Error in getSearchedFilterObjects: ${ex}`);
-            throw ex;
-        }
         if (!searchText) {
-            return this.filterRules;
+            return this.permissionFilterRules;
         }
-        return this.filterRules.filter(filterRule => {
+        return this.permissionFilterRules.filter(filterRule => {
             return filterRule.Resource.toLowerCase().includes(searchText.toLowerCase());
         });
     }
 
-    getDataSource(force: boolean = false) {
+    getDataSource() {
         return {
             init: async (state) => {
-                const searchedFilterRules = await this.getSearchedFilterRules(force, state.searchString);
+                const searchedFilterRules = this.getSearchedFilterRules(state.searchString);
                 return {
                     dataView: {
                         Context: {
@@ -224,7 +179,7 @@ export class ProfileFiltersListComponent implements OnInit {
                             FilterName: this.getFilterName(filterRule.Filter)
                         }
                     }),
-                    totalCount: this.filterRules.length
+                    totalCount: this.permissionFilterRules.length
                 }
             }
         } as IPepGenericListDataSource;
@@ -247,7 +202,8 @@ export class ProfileFiltersListComponent implements OnInit {
         handler: async (data) => {
             const filterRuleKeys = data?.rows;
             await this.fomoService.deleteFilterRules(filterRuleKeys);
-            this.listDataSource = this.getDataSource(true);
+            this.emitChangesEvent();
+            this.listDataSource = this.getDataSource();
         }
     }
 
