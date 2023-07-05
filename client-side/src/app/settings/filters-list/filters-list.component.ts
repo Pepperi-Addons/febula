@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { TranslateService } from '@ngx-translate/core';
 import { PepAddonService, PepLayoutService, PepScreenSizeType } from '@pepperi-addons/ngx-lib';
@@ -16,13 +16,14 @@ import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
     templateUrl: './filters-list.component.html',
     styleUrls: ['./filters-list.component.scss']
 })
-export class FiltersListComponent implements OnInit {
-
+export class FiltersListComponent implements OnInit, OnChanges {
+    @Input() filterObjects: FilterObject[];
+    @Input() resources: Collection[];
+    @Output() changesEvent: EventEmitter<any> = new EventEmitter<any>();
+    
     screenSize: PepScreenSizeType;
     fomoService: FomoService;
     filterObjectsMap: Map<string, FilterObject> = new Map<string, FilterObject>();
-    filterObjects?: FilterObject[] = undefined;
-    resources?: Collection[] = undefined;
 
 
     constructor(
@@ -43,9 +44,14 @@ export class FiltersListComponent implements OnInit {
     ngOnInit() {
     }
 
+    ngOnChanges(changes: SimpleChanges) { 
+        this.updateFilterObjectsMap(this.filterObjects);
+        this.listDataSource = this.getDataSource();
+    }
 
-    private async openAttachmentDialog(callback: (value: any) => void, data?: { filterObject: FilterObject }) {
-        this.listDataSource = this.getDataSource(true); // update all different resources so form will have the latest data
+
+    private openAttachmentDialog(callback: (value: any) => void, data?: { filterObject: FilterObject }) {
+        this.listDataSource = this.getDataSource(); // update all different resources so form will have the latest data
         const config = this.dialogService.getDialogConfig({}, 'large');
 
         config.data = new PepDialogData({
@@ -54,7 +60,8 @@ export class FiltersListComponent implements OnInit {
         this.dialogService.openDialog(FilterFormComponent, { ...data, filterObjectList: this.filterObjects, resourceList: this.resources }, config).afterClosed().subscribe((value) => {
             if (value) {
                 console.log(JSON.stringify(value));
-                this.listDataSource = this.getDataSource(true);
+                this.emitChangesEvent();
+                this.listDataSource = this.getDataSource();
                 callback(value);
             }
         });
@@ -76,40 +83,7 @@ export class FiltersListComponent implements OnInit {
         });
     }
 
-    async updateFilterObjects() {
-        try {
-            this.filterObjects = await this.fomoService.getFilterObjects();
-            this.updateFilterObjectsMap(this.filterObjects);
-        }
-        catch (ex) {
-            console.error(`Error in updateFilterObjects: ${ex}`);
-            throw ex;
-        }
-    }
-
-    async updateResources() {
-        try {
-            this.resources = await this.fomoService.getResources();
-        }
-        catch (ex) {
-            console.error(`Error in updateResources: ${ex}`);
-            throw ex;
-        }
-    }
-
-    async getSearchedFilterObjects(force: boolean, searchText?: string): Promise<FilterObject[]> {
-        try {
-            if (this.filterObjects === undefined || force) {
-                await this.updateFilterObjects();
-            }
-            if (this.resources === undefined) {
-                await this.updateResources();
-            }
-        }
-        catch (ex) {
-            console.error(`Error in getSearchedFilterObjects: ${ex}`);
-            throw ex;
-        }
+    getSearchedFilterObjects(searchText?: string): FilterObject[] {
         if (!searchText) {
             return this.filterObjects;
         }
@@ -118,11 +92,14 @@ export class FiltersListComponent implements OnInit {
         });
     }
 
+    emitChangesEvent() { ;
+        this.changesEvent.emit({action:"filterObjectChange"});
+    }
 
-    getDataSource(force: boolean = false) {
+    getDataSource() {
         return {
             init: async (state) => {
-                const searchedFilterObjects = await this.getSearchedFilterObjects(force, state.searchString);
+                const searchedFilterObjects = this.getSearchedFilterObjects(state.searchString);
                 return {
                     dataView: {
                         Context: {
@@ -230,7 +207,8 @@ export class FiltersListComponent implements OnInit {
         handler: async (data) => {
             const filterObjectKeys = data?.rows;
             await this.fomoService.deleteFilterObjects(filterObjectKeys);
-            this.listDataSource = this.getDataSource(true);
+            this.emitChangesEvent()
+            this.listDataSource = this.getDataSource();
         }
     }
 
