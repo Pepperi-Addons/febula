@@ -33,9 +33,9 @@ export class SettingsTabsComponent implements OnInit {
     async ngOnInit() {
         // update data
         await Promise.all([
-            await this.updateFilterObjects(),
-            await this.updateResources(),
-            await this.updateFilterRules()
+            this.updateFilterObjects(),
+            this.updateResources(),
+            this.updateFilterRules()
         ]);
     }
 
