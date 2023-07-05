@@ -93,7 +93,6 @@ export class FiltersListComponent implements OnInit, OnChanges {
         });
 
         //order by name
-        debugger;
         filterObjectsToReturn.sort((a, b) => {
             return a.Name.localeCompare(b.Name);
         }
