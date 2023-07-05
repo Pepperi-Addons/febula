@@ -84,12 +84,22 @@ export class FiltersListComponent implements OnInit, OnChanges {
     }
 
     getSearchedFilterObjects(searchText?: string): FilterObject[] {
+        let filterObjectsToReturn;
         if (!searchText) {
-            return this.filterObjects;
+            filterObjectsToReturn = this.filterObjects;
         }
-        return this.filterObjects.filter(filterObject => {
+        else filterObjectsToReturn = this.filterObjects.filter(filterObject => {
             return filterObject.Name.toLowerCase().includes(searchText.toLowerCase());
         });
+
+        //order by name
+        debugger;
+        filterObjectsToReturn.sort((a, b) => {
+            return a.Name.localeCompare(b.Name);
+        }
+        );
+
+        return filterObjectsToReturn;
     }
 
     emitChangesEvent() { ;
