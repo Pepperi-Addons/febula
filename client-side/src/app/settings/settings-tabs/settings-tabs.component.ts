@@ -32,9 +32,11 @@ export class SettingsTabsComponent implements OnInit {
 
     async ngOnInit() {
         // update data
-        await this.updateFilterObjects();
-        await this.updateResources();
-        await this.updateFilterRules();
+        await Promise.all([
+            await this.updateFilterObjects(),
+            await this.updateResources(),
+            await this.updateFilterRules()
+        ]);
     }
 
     private async updateFilterObjects() {
