@@ -195,7 +195,7 @@ export class FilterFormService {
         const nameField: IPepGenericFormDataViewField =
             {
                 "FieldID": "Name",
-                "Type": "TextArea",
+                "Type": "TextBox",
                 "Title": "Name",
                 "Mandatory": true,
                 "ReadOnly": this.mode === 'Edit',
