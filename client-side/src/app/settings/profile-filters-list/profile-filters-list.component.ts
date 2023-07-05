@@ -114,12 +114,30 @@ export class ProfileFiltersListComponent implements OnInit ,OnChanges {
     getSearchedFilterRules(searchText?: string): FilterRule[] {
         this.updateFilterRules();
 
+        let filterRulesToReturn;
+
         if (!searchText) {
-            return this.permissionFilterRules;
+            filterRulesToReturn = this.permissionFilterRules;
         }
-        return this.permissionFilterRules.filter(filterRule => {
+        else filterRulesToReturn = this.permissionFilterRules.filter(filterRule => {
             return filterRule.Resource.toLowerCase().includes(searchText.toLowerCase());
         });
+
+        //order by Resource and EmployeeType
+        filterRulesToReturn.sort((a, b) => {
+            if (a.Resource.toLowerCase() > b.Resource.toLowerCase()) {
+                return 1;
+            }
+            else if (a.Resource.toLowerCase() < b.Resource.toLowerCase()) {
+                return -1;
+            }
+            else {
+                return a.EmployeeType - b.EmployeeType;
+            }
+        }
+        );
+
+        return filterRulesToReturn;
     }
 
     getDataSource() {
