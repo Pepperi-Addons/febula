@@ -5,6 +5,7 @@ import { BasicFilterRuleData, FilterObject, FilterRule } from "../../shared/type
 import { BasicTableService } from "./basic-table.service";
 import { FilterObjectService } from "./filter-object.service";
 import { Promise } from "bluebird";
+import { v4 as uuid } from "uuid";
 
 export class FilterRuleService extends BasicTableService<FilterRule>{
     schemaName: string;
@@ -70,9 +71,12 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
         }
         const filterRules = await this.get({ where: `Resource like '${addonData.Resource}' and EmployeeType=${addonData.EmployeeType} and PermissionSet like '${addonData.PermissionSet}'` })
         if (filterRules.length > 0) {
-            // check if the filter is the same by comparing the keys
+            // check if the filter is the same by comparing the keys, or if no key was provided, assign the key of the existing filter rule
             const filterRule = filterRules[0];
-            if (filterRule.Key !== addonData.Key) {
+            if (!addonData.Key) {
+                addonData.Key = filterRule.Key;
+            }
+            else if (filterRule.Key !== addonData.Key) {
                 throw new Error(`Validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\n for "Sync" PermissionSet, Profile - Resource combination must be unique. The combination is already used by filter rule with key: ${filterRule.Key}`);
             }
         }
@@ -98,8 +102,11 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
         // validate schema
         await this.validateSchema(addonData);
 
-        // validate profile and filter combination
+        // validate profile and filter combination. also assigns key if it is not provided and the combination already exists
         await this.validateProfileFilterCombination(addonData);
+
+        // validate key exist
+        this.validateKey(addonData);
 
         // validate resource
         await this.validateResource(addonData);

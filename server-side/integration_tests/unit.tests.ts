@@ -4,6 +4,7 @@ import { AddonDataScheme, Collection, PapiClient } from '@pepperi-addons/papi-sd
 import { FilterObject, FilterRule } from '../../shared/types';
 import { FilterObjectTestService } from '../services/test-services/filter-object-test.service';
 import { FilterRuleTestService } from '../services/test-services/filter-rule-test.service';
+import { v4 as uuid } from "uuid";
 
 export class UnitTests extends BaseTest {
     title = 'Febula Unit Tests';
@@ -309,14 +310,23 @@ export class UnitTests extends BaseTest {
                             await expect(filterRuleService.upsert(filterRule)).eventually.to.be.rejectedWith('Filter validation failed');
                         });
                     });
-                    it('insert with an existing combination of employee type and resource and same permissionSet = Sync', async () => {
+                    it('insert with an existing combination of employee type and resource and same permissionSet = Sync and a different key', async () => {
                         // this should not work
                         const filterRule = await filterRuleService.createObject({EmployeeType: 1}); // PermissionSet = Sync by default
                         const res = await filterRuleService.upsert(filterRule);
                         // sleep for 1 second to make sure everything is updated
                         await new Promise(resolve => setTimeout(resolve, 1000));
-                        const filterRule2 = await filterRuleService.createObject({EmployeeType: 1});
+                        const filterRule2 = await filterRuleService.createObject({EmployeeType: 1, Key: uuid()});
                         await expect(filterRuleService.upsert(filterRule2)).eventually.to.be.rejectedWith('Profile - Resource combination must be unique.');
+                    });
+                    it('insert with an existing combination of employee type and resource and same permissionSet = Sync without key', async () => {
+                        // this should work and update the existing filter rule
+                        const filterRule = await filterRuleService.createObject({ EmployeeType: 1 }); // PermissionSet = Sync by default
+                        const res = await filterRuleService.upsert(filterRule);
+                        expect(res).to.be.an('object');
+                        // make sure only one filter rule exists for this combination
+                        const filterRules = await filterRuleService.get({ where: `EmployeeType = 1 AND Resource = '${filterRule.Resource}' AND PermissionSet = 'Sync'` });
+                        expect(filterRules).to.be.an('array').to.have.lengthOf(1);
                     });
                     it('insert with an existing combination of employee type and resource and different permissionSet', async () => {
                         // this should now work

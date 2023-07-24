@@ -66,7 +66,6 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
         }
     }
 
-
     // validate that name is valid
     validateName(addonData: FilterObject): void {
         if (!addonData.Name) {
@@ -130,6 +129,7 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
 
     async validateData(addonData: FilterObject): Promise<void> {
         // these validations are in order. Do not change the order or else things will break.
+        this.validateKey(addonData);
         await this.validateSchema(addonData);
         this.validateName(addonData);
         await this.validateResource(addonData);
