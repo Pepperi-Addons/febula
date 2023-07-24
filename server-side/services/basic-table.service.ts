@@ -1,8 +1,9 @@
 import { Client } from "@pepperi-addons/debug-server/dist";
 import { AddonData, PapiClient, AddonDataScheme, FindOptions, Collection, SearchData } from "@pepperi-addons/papi-sdk";
-import { v4 as uuid } from "uuid";
 import { Validator } from "jsonschema";
 import { Promise } from "bluebird";
+import { v4 as uuid } from "uuid";
+
 
 export abstract class BasicTableService<T extends AddonData>{
     papiClient: PapiClient;
@@ -78,6 +79,13 @@ export abstract class BasicTableService<T extends AddonData>{
         }
     }
 
+    // validate that key exists, create if not
+    validateKey(addonData: T) {
+        if (!addonData.Key) {
+            addonData.Key = uuid();
+        }
+    }
+
     async createSchema(): Promise<any> {
         try {
             return await this.papiClient.addons.data.schemes.post(this.schema);
@@ -115,9 +123,6 @@ export abstract class BasicTableService<T extends AddonData>{
 
     // upsert filter object after validation and add key if missing
     async upsert(addonData: T, system: boolean = false): Promise<any> {
-        if (!addonData.Key) {
-            addonData.Key = uuid();
-        }
         if (!addonData.AddonUUID) {
             // if the ownerUUID is not the same as the client addonUUID, then it is a system Filter.
             // in this case, we need to set the AddonUUID to the ownerUUID.
