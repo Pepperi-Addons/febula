@@ -50,6 +50,12 @@ export async function upgrade(client: Client, request: Request): Promise<any> {
         //}
         const relationService = new RelationsService(client);
         await relationService.upsertRelations();
+
+        // upsert default Filters and Profile-filters
+        const filterObjectService = new FilterObjectService(client);
+        const basicFilterRuleData: BasicFilterRuleData[] = await filterObjectService.upsertBasicFilterObjects();
+        await filterRuleService.upsertBasicFilterRules(basicFilterRuleData);
+        
         return { success: true, resultObject: {} }
 
     }
