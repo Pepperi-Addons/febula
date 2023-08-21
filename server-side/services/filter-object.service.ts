@@ -168,7 +168,22 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
                 Key: accountUsersResult.Key
             };
 
-            return [currentUserResourceAndKey, assignedAccountsResourceAndKey];
+            const profileFilterObject = {
+                Name: 'Current User Profile',
+                Resource: 'users',
+                Field: 'Profile',
+                PreviousFilter: usersResult.Key,
+                PreviousField: 'Key'
+            };
+
+            const profileResult = await this.upsert(profileFilterObject, true);
+
+            const profileResourceAndKey = {
+                Resource: 'profiles',
+                Key: profileResult.Key
+            };
+
+            return [currentUserResourceAndKey, assignedAccountsResourceAndKey, profileResourceAndKey];
         }
         catch (ex) {
             console.error(`upsertBasicFilterObjects failed: ${ex}`);
