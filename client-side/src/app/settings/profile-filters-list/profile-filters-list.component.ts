@@ -120,7 +120,8 @@ export class ProfileFiltersListComponent implements OnInit ,OnChanges {
             filterRulesToReturn = this.permissionFilterRules;
         }
         else filterRulesToReturn = this.permissionFilterRules.filter(filterRule => {
-            return filterRule.Resource.toLowerCase().includes(searchText.toLowerCase());
+            return (filterRule.Resource.toLowerCase().includes(searchText.toLowerCase())) ||
+                (this.getFilterName(filterRule.Filter).toLowerCase().includes(searchText.toLowerCase()));
         });
 
         //order by Resource and EmployeeType
