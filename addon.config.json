@@ -23,7 +23,7 @@
       }
     ],
     "Dependencies": {
-      "core_resources": "1.0.2",
+      "core_resources": "1.0.12",
       "generic_resource": "0.6.2"
     },
     "CPISide": []
