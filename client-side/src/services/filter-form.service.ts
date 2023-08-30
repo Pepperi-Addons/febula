@@ -244,7 +244,7 @@ export class FilterFormService {
             "Type": "ComboBox",
             "OptionalValues": this.getFieldOptions(),
             "AdditionalProps": { "emptyOption": false },
-            "Title": "Field which contains the required values (Only resource fields can be used)",
+            "Title": `Field containing required values (Only resource fields allowed)`,
             "Mandatory": true,
             "ReadOnly": (this.mode === 'Edit'),
             "Layout": {
