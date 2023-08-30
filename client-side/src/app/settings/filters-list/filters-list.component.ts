@@ -20,7 +20,7 @@ export class FiltersListComponent implements OnInit, OnChanges {
     @Input() filterObjects: FilterObject[];
     @Input() resources: Collection[];
     @Output() changesEvent: EventEmitter<any> = new EventEmitter<any>();
-    
+
     screenSize: PepScreenSizeType;
     fomoService: FomoService;
     filterObjectsMap: Map<string, FilterObject> = new Map<string, FilterObject>();
@@ -42,9 +42,10 @@ export class FiltersListComponent implements OnInit, OnChanges {
     }
 
     ngOnInit() {
+        this.updateFilterObjectsMap(this.filterObjects);
     }
 
-    ngOnChanges(changes: SimpleChanges) { 
+    ngOnChanges(changes: SimpleChanges) {
         this.updateFilterObjectsMap(this.filterObjects);
         this.listDataSource = this.getDataSource();
     }
@@ -83,13 +84,32 @@ export class FiltersListComponent implements OnInit, OnChanges {
         });
     }
 
+    getFilterNameByKey(key: string) {
+        if (!key) {
+            return '';
+        }
+        const filter = this.filterObjectsMap.get(key)
+        if (!filter) {
+            throw new Error(`Filter with key ${key} not found`);
+        }
+        const filterName = filter.Name;
+        if (!filterName) {
+            throw new Error(`Filter with key ${key} has no name`);
+        }
+        return filterName;
+    }
+
     getSearchedFilterObjects(searchText?: string): FilterObject[] {
         let filterObjectsToReturn;
         if (!searchText) {
             filterObjectsToReturn = this.filterObjects;
         }
         else filterObjectsToReturn = this.filterObjects.filter(filterObject => {
-            return filterObject.Name.toLowerCase().includes(searchText.toLowerCase());
+            return (filterObject.Name.toLowerCase().includes(searchText.toLowerCase())) ||
+                (filterObject.Field.toLowerCase().includes(searchText.toLowerCase())) ||
+                (filterObject.Resource.toLowerCase().includes(searchText.toLowerCase())) ||
+                (filterObject.PreviousField ? filterObject.PreviousField.toLowerCase().includes(searchText.toLowerCase()) : false) ||
+                (filterObject.PreviousFilterName ? filterObject.PreviousFilterName.toLowerCase().includes(searchText.toLowerCase()) : this.getFilterNameByKey(filterObject.PreviousFilter).toLowerCase().includes(searchText.toLowerCase())) // this doesn't need us to check for the existance of PreviousFilter since if it doesn't, getFilterNameByKey will return empty string and the includes will return false;
         });
 
         //order by name
@@ -101,8 +121,9 @@ export class FiltersListComponent implements OnInit, OnChanges {
         return filterObjectsToReturn;
     }
 
-    emitChangesEvent() { ;
-        this.changesEvent.emit({action:"filterObjectChange"});
+    emitChangesEvent() {
+        ;
+        this.changesEvent.emit({ action: "filterObjectChange" });
     }
 
     getDataSource() {
@@ -189,7 +210,7 @@ export class FiltersListComponent implements OnInit, OnChanges {
                     items: searchedFilterObjects.map(filterObject => {
                         return {
                             ...filterObject,
-                            PreviousFilterName: this.filterObjectsMap.get(filterObject.PreviousFilter)?.Name,
+                            PreviousFilterName: this.getFilterNameByKey(filterObject.PreviousFilter),
                             Locked: this.isLocked(filterObject)
                         }
                     }),
