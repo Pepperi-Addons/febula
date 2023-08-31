@@ -66,10 +66,11 @@ export class ProfileFiltersFormComponent implements OnInit {
         this.dataSource = this.profileFiltersFormService.getFilterRule();
     }
 
-    async ngOnInit() {
-        await this.profileFiltersFormService.init();
+    ngOnInit() {
+        this.profileFiltersFormService.init();
         this.updateDataSource();
         this.updateDataView();
+
     }
 
     valueChange($event: IPepGenericFormValueChange) {
