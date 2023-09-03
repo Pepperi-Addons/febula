@@ -1,7 +1,7 @@
 import { IPepGenericFormDataView, IPepGenericFormDataViewField } from "@pepperi-addons/ngx-composite-lib/generic-form";
 import { PepAddonService } from "@pepperi-addons/ngx-lib";
 import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
-import { FilterObject, FilterRule } from "../../../shared/types";
+import { FilterObject } from "../../../shared/types";
 import { FomoService } from "./fomo.service";
 
 export class FilterFormService {

@@ -72,7 +72,6 @@ export class FilterFormComponent implements OnInit {
         this.updateDataView();
     }
 
-
     valueChange($event: IPepGenericFormValueChange) {
         console.log($event);
         // switch case for ApiName

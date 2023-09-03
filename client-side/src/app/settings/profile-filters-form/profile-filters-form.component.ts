@@ -64,15 +64,14 @@ export class ProfileFiltersFormComponent implements OnInit {
 
     updateDataSource() {
         this.dataSource = this.profileFiltersFormService.getFilterRule();
-        return {}
     }
 
-    async ngOnInit() {
-        await this.profileFiltersFormService.init();
+    ngOnInit() {
+        this.profileFiltersFormService.init();
         this.updateDataSource();
         this.updateDataView();
-    }
 
+    }
 
     valueChange($event: IPepGenericFormValueChange) {
         console.log($event);
