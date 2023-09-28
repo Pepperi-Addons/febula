@@ -114,7 +114,7 @@ export class ProfileFiltersListComponent implements OnInit ,OnChanges {
     getSearchedFilterRules(searchText?: string): FilterRule[] {
         this.updateFilterRules();
 
-        let filterRulesToReturn;
+        let filterRulesToReturn:FilterRule[];
 
         if (!searchText) {
             filterRulesToReturn = this.permissionFilterRules;
@@ -198,7 +198,7 @@ export class ProfileFiltersListComponent implements OnInit ,OnChanges {
                             FilterName: this.getFilterName(filterRule.Filter)
                         }
                     }),
-                    totalCount: this.permissionFilterRules.length
+                    totalCount: searchedFilterRules.length
                 }
             }
         } as IPepGenericListDataSource;
