@@ -1,13 +1,17 @@
 
-<pep-generic-list [hideSelectAll]="true" [showSearch]="true" title="Filters" [dataSource]="listDataSource"
-    [uuidMapping]="'Key'" [actions]="actions" [showTopBar]="true" [selectionType]="'multi'" [inline]="true"
-    [noDataFoundMsg]="'No Data Found'"
-    [description]="'Define rules of objects to be used for data filtering of User Defined Collections.'">
-    <ng-container right-buttons>
-        <pep-button class="pep-spacing-element" value="{{'Add' | translate}}" styleType="strong"
-            styleStateType="system" sizeType="sm" classNames="s" [visible]="true"
-            (buttonClick)="buttonClick($event)"></pep-button>
+<pep-page-layout>
+    <ng-container pep-main-area>
+        <pep-generic-list [hideSelectAll]="true" [showSearch]="true" title="Filters" [dataSource]="listDataSource"
+            [uuidMapping]="'Key'" [actions]="actions" [showTopBar]="true" [selectionType]="'multi'" [inline]="true"
+            [noDataFoundMsg]="'No Data Found'"
+            [description]="'Define rules of objects to be used for data filtering of User Defined Collections.'">
+            <ng-container right-buttons>
+                <pep-button class="pep-spacing-element" value="{{'Add' | translate}}" styleType="strong"
+                    styleStateType="system" sizeType="sm" classNames="s" [visible]="true"
+                    (buttonClick)="buttonClick($event)"></pep-button>
+            </ng-container>
+        </pep-generic-list>
     </ng-container>
-</pep-generic-list>
+</pep-page-layout>
 
 <pep-size-detector></pep-size-detector>
