@@ -4,7 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { PepAddonService, PepLayoutService, PepScreenSizeType } from '@pepperi-addons/ngx-lib';
 import { PepSelectionData } from '@pepperi-addons/ngx-lib/list';
 import { IPepGenericListDataSource, IPepGenericListActions } from "@pepperi-addons/ngx-composite-lib/generic-list";
-import { FomoService } from "src/services/fomo.service";
+import { FebulaService } from "../../../services/febula.service";
 import { FilterObject, FilterRule, PermissionSetValues } from "../../../../../shared/types";
 import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
 import { ProfileFiltersFormComponent } from "../profile-filters-form/profile-filters-form.component";
@@ -16,7 +16,7 @@ import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
     templateUrl: './profile-filters-list.component.html',
     styleUrls: ['./profile-filters-list.component.scss']
 })
-export class ProfileFiltersListComponent implements OnInit ,OnChanges {
+export class ProfileFiltersListComponent implements OnInit, OnChanges {
     @Input() permissionType: PermissionSetValues;
     @Input() filterRules: FilterRule[];
     @Input() resources: Collection[];
@@ -25,11 +25,10 @@ export class ProfileFiltersListComponent implements OnInit ,OnChanges {
     @Output() changesEvent: EventEmitter<any> = new EventEmitter<any>();
 
     screenSize: PepScreenSizeType;
-    fomoService: FomoService;
+    febulaService: FebulaService;
     filterRulesMap: Map<string, FilterRule> = new Map<string, FilterRule>();
     title: string
     permissionFilterRules: FilterRule[] = [];
-
 
     constructor(
         public router: Router,
@@ -43,18 +42,18 @@ export class ProfileFiltersListComponent implements OnInit ,OnChanges {
         this.layoutService.onResize$.subscribe(size => {
             this.screenSize = size;
         });
-        this.fomoService = new FomoService(this.pepAddonService);
+        this.febulaService = new FebulaService(this.pepAddonService);
     }
 
-    ngOnInit() {
+    public ngOnInit() {
         this.title = `${this.permissionType}-Filters`
     }
 
-    ngOnChanges(changes: SimpleChanges) { 
+    public ngOnChanges(_changes: SimpleChanges) { 
         this.listDataSource = this.getDataSource();
     }
 
-    emitChangesEvent() { ;
+    private emitChangesEvent() {
         this.changesEvent.emit({action:"filterRuleChange"});
     }
 
@@ -93,25 +92,25 @@ export class ProfileFiltersListComponent implements OnInit ,OnChanges {
         return this.filterKeyToNameMap.get(filterKey);
     }
 
-    buttonClick($event: any) {
+    public buttonClick($event: any) {
         console.log(`buttonClick: ${JSON.stringify($event)}`);
         this.openAttachmentDialog((value) => {
             console.log(`callback from dialog: ${JSON.stringify(value)}`);
         });
     }
 
-    updateFilterRulesMap(filterRules: FilterRule[]) {
+    private updateFilterRulesMap(filterRules: FilterRule[]) {
         filterRules.forEach(filterRule => {
             this.filterRulesMap.set(filterRule.Key, filterRule);
         });
     }
 
-    updateFilterRules() {
+    private updateFilterRules() {
         this.permissionFilterRules = this.filterRules.filter(filterRule => filterRule.PermissionSet === this.permissionType);
         this.updateFilterRulesMap(this.filterRules);
     }
 
-    getSearchedFilterRules(searchText?: string): FilterRule[] {
+    private getSearchedFilterRules(searchText?: string): FilterRule[] {
         this.updateFilterRules();
 
         let filterRulesToReturn:FilterRule[];
@@ -141,7 +140,7 @@ export class ProfileFiltersListComponent implements OnInit ,OnChanges {
         return filterRulesToReturn;
     }
 
-    getDataSource() {
+    private getDataSource() {
         return {
             init: async (state) => {
                 const searchedFilterRules = this.getSearchedFilterRules(state.searchString);
@@ -203,9 +202,10 @@ export class ProfileFiltersListComponent implements OnInit ,OnChanges {
             }
         } as IPepGenericListDataSource;
     }
+
     listDataSource: IPepGenericListDataSource = this.getDataSource();
 
-    editAction = {
+    private editAction = {
         title: this.translate.instant("Edit"),
         handler: async (data) => {
             const filterRuleKey = data?.rows[0];
@@ -216,17 +216,17 @@ export class ProfileFiltersListComponent implements OnInit ,OnChanges {
         }
     }
 
-    deleteAction = {
+    private deleteAction = {
         title: this.translate.instant("Delete"),
         handler: async (data) => {
             const filterRuleKeys = data?.rows;
-            await this.fomoService.deleteFilterRules(filterRuleKeys);
+            await this.febulaService.deleteFilterRules(filterRuleKeys);
             this.emitChangesEvent();
             this.listDataSource = this.getDataSource();
         }
     }
 
-    actions: IPepGenericListActions = {
+    public actions: IPepGenericListActions = {
         get: async (data: PepSelectionData) => {
             if (data.rows.length == 1) {
                 return [

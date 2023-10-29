@@ -2,12 +2,13 @@ import { IPepGenericFormDataView, IPepGenericFormDataViewField } from "@pepperi-
 import { PepAddonService } from "@pepperi-addons/ngx-lib";
 import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
 import { FilterObject } from "../../../shared/types";
-import { FomoService } from "./fomo.service";
+import { FebulaService } from "./febula.service";
+import { EditorMode } from "./consts";
 
 export class FilterFormService {
 
-    fomoService: FomoService;
-    mode: 'Add' | 'Edit'
+    private febulaService: FebulaService;
+    private mode: EditorMode;
     private filterObject: FilterObject;
     private resources: Collection[];
     private previousFilters: FilterObject[];
@@ -19,10 +20,11 @@ export class FilterFormService {
     private filterObjectList: FilterObject[];
     private allResources: Collection[];
 
-    constructor(private pepAddonService: PepAddonService, filterObjectList: FilterObject[], resourceList: Collection[], filterObject?: FilterObject) {
-        this.fomoService = new FomoService(pepAddonService);
+    constructor(pepAddonService: PepAddonService, filterObjectList: FilterObject[], resourceList: Collection[], filterObject?: FilterObject) {
+        this.febulaService = new FebulaService(pepAddonService);
         this.allResources = resourceList;
         this.filterObjectList = filterObjectList;
+
         // inject "Key" field to all resources as a reference to self
         resourceList.forEach((resource) => {
             resource.Fields["Key"] = {
@@ -33,6 +35,7 @@ export class FilterFormService {
                 Description: "Key is a reference to the resource itself",
             }
         });
+
         this.resources = resourceList.filter(this.filterAtLeastTwoResources);
         this.filterObject = filterObject ? filterObject : {
             Name: '',
@@ -58,7 +61,7 @@ export class FilterFormService {
         return false;
     }
 
-    getFilterObject(): FilterObject {
+    public getFilterObject(): FilterObject {
         return this.filterObject
     }
 
@@ -96,7 +99,7 @@ export class FilterFormService {
     }
 
     // returns the filter objects for which their Field field references the given resource name
-    getFilterObjectsOfResource(previousFieldResourceName: string): FilterObject[] {
+    private getFilterObjectsOfResource(previousFieldResourceName: string): FilterObject[] {
         const filterObjects = this.filterObjectList.filter((filterObject) => {
             const resource = this.allResources.find((resource) => resource.Name === filterObject.Resource);
             return resource?.Fields[filterObject.Field].Resource === previousFieldResourceName;
@@ -104,7 +107,7 @@ export class FilterFormService {
         return filterObjects;
     }
 
-    init(): void {
+    public init(): void {
         this.setResourceOptions();
         if (this.filterObject.Resource) {
             this.chosenResource = this.resources.find((resource) => resource.Name === this.filterObject.Resource);
@@ -120,35 +123,37 @@ export class FilterFormService {
     }
 
     //#region setters
-    setName(name: string) {
+
+    public setName(name: string) {
         this.filterObject.Name = name;
     }
 
-    setResource(resource: string) {
+    public setResource(resource: string) {
         this.filterObject.Resource = resource;
         this.chosenResource = this.resources.find((resource) => resource.Name === this.filterObject.Resource);
         this.setField('');
         this.setFieldOptions();
     }
 
-    setField(field: string) {
+    public setField(field: string) {
         this.filterObject.Field = field;
         this.setPreviousField('');
         this.setPreviousFieldOptions();
     }
 
-    setPreviousField(previousField: string) {
+    public setPreviousField(previousField: string) {
         this.filterObject.PreviousField = previousField;
         this.filterObject.PreviousFilter = '';
         this.filterObject.PreviousFilterName = '';
         this.setPreviousFilterOptions();
     }
 
-    setPreviousFilter(previousFilter: string) {
+    public setPreviousFilter(previousFilter: string) {
         const previousFilterObject = this.previousFilters.find((filter) => filter.Name === previousFilter);
         this.filterObject.PreviousFilter = previousFilterObject ? previousFilterObject.Key : '';
         this.filterObject.PreviousFilterName = previousFilterObject ? previousFilterObject.Name : '';
     }
+
     // #endregion
 
     private stringArrayToOptionsArray(array: string[]): any[] {
@@ -159,39 +164,40 @@ export class FilterFormService {
             }
         })
     }
-    getResourceOptions(): {
+
+    private getResourceOptions(): {
         Key: string;
         Value: string;
     }[] {
         return this.stringArrayToOptionsArray(this.resourceOptions);
     }
 
-    getFieldOptions(): {
+    private getFieldOptions(): {
         Key: string;
         Value: string;
     }[] {
         return this.stringArrayToOptionsArray(this.fieldOptions);
     }
 
-    getPreviousFieldOptions(): {
+    private getPreviousFieldOptions(): {
         Key: string;
         Value: string;
     }[] {
         return this.stringArrayToOptionsArray(this.previousFieldOptions);
     }
 
-    getPreviousFilterOptions(): {
+    private getPreviousFilterOptions(): {
         Key: string;
         Value: string;
     }[] {
         return this.stringArrayToOptionsArray(this.previousFilterOptions);
     }
 
-    async save(): Promise<FilterObject> {
-        return await this.fomoService.upsertFilterObject(this.filterObject);
+    public async save(): Promise<FilterObject> {
+        return await this.febulaService.upsertFilterObject(this.filterObject);
     }
 
-    getDataView(): IPepGenericFormDataView {
+    public getDataView(): IPepGenericFormDataView {
         const nameField: IPepGenericFormDataViewField =
             {
                 "FieldID": "Name",
@@ -370,5 +376,4 @@ export class FilterFormService {
             "Rows": []
         }
     }
-
 }

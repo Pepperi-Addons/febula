@@ -4,7 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { PepAddonService, PepLayoutService, PepScreenSizeType } from '@pepperi-addons/ngx-lib';
 import { PepSelectionData } from '@pepperi-addons/ngx-lib/list';
 import { IPepGenericListDataSource, IPepGenericListActions } from "@pepperi-addons/ngx-composite-lib/generic-list";
-import { FomoService } from "src/services/fomo.service";
+import { FebulaService } from "../../../services/febula.service";
 import { FilterObject } from "../../../../../shared/types";
 import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
 import { FilterFormComponent } from "../filter-form/filter-form.component";
@@ -22,7 +22,7 @@ export class FiltersListComponent implements OnInit, OnChanges {
     @Output() changesEvent: EventEmitter<any> = new EventEmitter<any>();
 
     screenSize: PepScreenSizeType;
-    fomoService: FomoService;
+    febulaService: FebulaService;
     filterObjectsMap: Map<string, FilterObject> = new Map<string, FilterObject>();
 
 
@@ -38,7 +38,7 @@ export class FiltersListComponent implements OnInit, OnChanges {
         this.layoutService.onResize$.subscribe(size => {
             this.screenSize = size;
         });
-        this.fomoService = new FomoService(this.pepAddonService);
+        this.febulaService = new FebulaService(this.pepAddonService);
     }
 
     ngOnInit() {
@@ -236,7 +236,7 @@ export class FiltersListComponent implements OnInit, OnChanges {
         title: this.translate.instant("Delete"),
         handler: async (data) => {
             const filterObjectKeys = data?.rows;
-            await this.fomoService.deleteFilterObjects(filterObjectKeys);
+            await this.febulaService.deleteFilterObjects(filterObjectKeys);
             this.emitChangesEvent()
             this.listDataSource = this.getDataSource();
         }

@@ -39,7 +39,7 @@ export interface FilterObject extends AddonData {
  */
 export interface FilterRule extends AddonData {
     Key?: string;
-    EmployeeType: 1 | 2 | 3; // 1 = Admin, 2 = Rep, 3 = Buyer
+    EmployeeType: 1 | 2 | 3; // 1 = Admin, 2 = Rep, 3 = Buyer // TODO: create type
     Resource: string;
     Filter: string;
     AddonUUID?: string;

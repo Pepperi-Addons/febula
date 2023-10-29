@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Routes } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 
 import { TranslateModule } from '@ngx-translate/core';
@@ -18,27 +17,17 @@ import { MatTabsModule } from '@angular/material/tabs';
 
 import { PepGenericListModule } from '@pepperi-addons/ngx-composite-lib/generic-list';
 
-import { SettingsTabsComponent } from './settings-tabs.component';
-import { FiltersListModule } from "../filters-list/filters-list.module";
-import { ProfileFiltersListModule } from '../profile-filters-list/profile-filters-list.module';
-import { SyncVisualizationModule } from '../sync-visualization/sync-visualization.module';
+import { SyncVisualizationComponent } from './sync-visualization.component';
+import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
 
 const pepIcons = [
     pepIconSystemClose,
 ];
 
-export const routes: Routes = [
-    {
-        path: '',
-        component: SettingsTabsComponent
-    }
-];
-
 @NgModule({
     declarations: [
-        SettingsTabsComponent
+        SyncVisualizationComponent
     ],
-    exports: [SettingsTabsComponent],
     imports: [
         CommonModule,
         HttpClientModule,
@@ -53,15 +42,13 @@ export const routes: Routes = [
         // PepTextboxModule,
         PepGenericListModule,
         MatTabsModule,
+        PepButtonModule,
         TranslateModule.forChild(),
-        RouterModule.forChild(routes),
-        FiltersListModule,
-        ProfileFiltersListModule,
-        SyncVisualizationModule
-    ]
+    ],
+    exports: [SyncVisualizationComponent]
 })
 
-export class SettingsTabsModule {
+export class SyncVisualizationModule {
     constructor(
         private pepIconRegistry: PepIconRegistry,
     ) {
