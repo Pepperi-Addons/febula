@@ -10,6 +10,7 @@ import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog"
 import { FilterFormComponent } from "../filter-form/filter-form.component";
 import { config } from "../../app.config";
 import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
+import { UtilsService } from "../../../services/utils.service";
 
 interface ResourceAndProfilePair {
     Resource: Collection;
@@ -19,7 +20,7 @@ interface ResourceAndProfilePair {
 interface ResourceProfileAndSyncRule {
     Resource: Collection;
     Profile: FilterRule;
-    FilterObject: FilterObject;
+    FilterObjects: FilterObject[]; // Of all fields of a resource
 }
 
 interface ListData {
@@ -46,6 +47,7 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
     febulaService: FebulaService;
     filterObjectsMap: Map<string, FilterObject> = new Map<string, FilterObject>();
     listDataSource: IPepGenericListDataSource = this.getDataSource();
+    private readonly SYNC_RULE_ERROR = 'ERROR in filter chain';
 
     constructor(
         public router: Router,
@@ -61,16 +63,517 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
         });
         this.febulaService = new FebulaService(this.pepAddonService);
     }
+    
+    private addMockedData() {
+        const CORE_RESOURCES_ADDON_UUID = 'bla_bla';
+        const FiltersForTests: FilterObject[] = [
+            {
+                Key: 'CurrentUser',
+                Name: 'CurrentUser',
+                Resource: 'users',
+                Field: 'Key',
+                AddonUUID: '',
+            },
+            {
+                Key: 'ConnectedAccounts',
+                Name: 'ConnectedAccounts',
+                Resource: 'account_users',
+                Field: 'Account',
+                PreviousFilter: 'CurrentUser',
+                PreviousField: 'User',
+            },
+            {
+                Key: 'AssignedProfile',
+                Name: 'AssignedProfile',
+                Resource: 'users',
+                Field: 'Profile',
+                PreviousFilter: 'CurrentUser',
+                PreviousField: 'Key',
+            },
+            {
+                Key: 'AssignedRole',
+                Name: 'AssignedRole',
+                Resource: 'users',
+                Field: 'Role',
+                PreviousFilter: 'CurrentUser',
+                PreviousField: 'Key',
+            },
+            {
+                Key: 'RolesUnderMyHierarchy',
+                Name: 'RolesUnderMyHierarchy',
+                Resource: 'roles_roles',
+                Field: 'Role',
+                PreviousFilter: 'AssignedRole',
+                PreviousField: 'Role',
+            },
+            {
+                Key: 'UsersUnderMyHierarchy',
+                Name: 'RolesUnderMyHierarchy',
+                Resource: 'users',
+                Field: 'Key',
+                PreviousFilter: 'RolesUnderMyHierarchy',
+                PreviousField: 'Role',
+            },
+            {
+                Key: 'AccountsUnderMyHierarchy',
+                Name: 'AccountsUnderMyHierarchy',
+                Resource: 'account_users',
+                Field: 'Account',
+                PreviousFilter: 'UsersUnderMyHierarchy',
+                PreviousField: 'User',
+            },
+            {
+                Key: 'AssignedUsers',
+                Name: 'AssignedUsers',
+                Resource: 'assigned_users',
+                Field: 'Subordinate',
+                PreviousField: 'Manager',
+                PreviousFilter: 'CurrentUser',
+            },
+            {
+                Key: 'AccountUnderMyHierarchy',
+                Name: 'name',
+                Resource: 'account_users',
+                Field: 'Account',
+                PreviousField: 'User',
+                PreviousFilter: 'AssignedUsers',
+            },
+            {
+                Key: 'bFilter',
+                Name: 'bFilter',
+                Resource: 'b',
+                Field: 'Key',
+                PreviousField: 'userRef',
+                PreviousFilter: 'CurrentUser',
+            },
+            {
+                Key: 'cFilter',
+                Name: 'cFilter',
+                Resource: 'c',
+                Field: 'Key',
+                PreviousField: 'bRef',
+                PreviousFilter: 'bFilter',
+            },
+            {
+                Key: 'AssignedDivision',
+                Name: 'AssignedDivision',
+                Resource: 'user_divisions',
+                Field: 'divisionRef',
+                PreviousField: 'userRef',
+                PreviousFilter: 'CurrentUser',
+            },
+            {
+                Key: 'ManagerAssignedDivision',
+                Name: 'ManagerAssignedDivision',
+                Resource: 'user_divisions',
+                Field: 'divisionRef',
+                PreviousField: 'userRef',
+                PreviousFilter: 'AssignedUsers',
+            },
+            {
+                Key: 'AssignedDivision_non_associative',
+                Name: 'AssignedDivision_non_associative',
+                Resource: 'user_divisions_non_associative',
+                Field: 'divisionRef',
+                PreviousField: 'userRef',
+                PreviousFilter: 'CurrentUser',
+            },
+            {
+                Key: 'DivisionsToAssignedDivision_non_associative',
+                Name: 'DivisionsToAssignedDivision_non_associative',
+                Resource: 'toDivisions',
+                Field: 'Key',
+                PreviousField: 'divisionRef',
+                PreviousFilter: 'AssignedDivision_non_associative',
+            },
+        ];
+        const ProfileFiltersForTests: FilterRule[] = [
+            {
+                Key: '1',
+                EmployeeType: 1,
+                Resource: 'users',
+                Filter: 'CurrentUser',
+                PermissionSet: 'Sync',
+            },
+            {
+                Key: '2',
+                EmployeeType: 1,
+                Resource: 'accounts',
+                Filter: 'ConnectedAccounts',
+                PermissionSet: 'Sync',
+            },
+            {
+                Key: '3',
+                EmployeeType: 2,
+                Resource: 'users',
+                Filter: 'AssignedUsers',
+                PermissionSet: 'Sync',
+            },
+            {
+                Key: '4',
+                EmployeeType: 2,
+                Resource: 'accounts',
+                Filter: 'AccountUnderMyHierarchy',
+                PermissionSet: 'Sync',
+            },
+            {
+                Key: '5',
+                EmployeeType: 1,
+                Resource: 'b',
+                Filter: 'bFilter',
+                PermissionSet: 'Sync',
+            },
+            {
+                Key: '6',
+                EmployeeType: 1,
+                Resource: 'c',
+                Filter: 'cFilter',
+                PermissionSet: 'Sync',
+            },
+            {
+                Key: '7',
+                EmployeeType: 1,
+                Resource: 'Divisions',
+                Filter: 'AssignedDivision',
+                PermissionSet: 'Sync',
+            },
+            {
+                Key: '8',
+                EmployeeType: 2,
+                Resource: 'Divisions',
+                Filter: 'ManagerAssignedDivision',
+                PermissionSet: 'Sync',
+            },
+            {
+                Key: '9',
+                EmployeeType: 3,
+                Resource: 'Divisions',
+                Filter: 'AssignedDivision_non_associative',
+                PermissionSet: 'Sync',
+            },
+            {
+                Key: '10',
+                EmployeeType: 3,
+                Resource: 'toDivisions',
+                Filter: 'DivisionsToAssignedDivision_non_associative',
+                PermissionSet: 'Sync',
+            },
+            {
+                Key: '11',
+                EmployeeType: 1,
+                Resource: 'profiles',
+                Filter: 'AssignedProfile',
+                PermissionSet: 'Sync',
+            },
+            {
+                Key: '12',
+                EmployeeType: 3,
+                Resource: 'accounts',
+                Filter: 'AccountsUnderMyHierarchy',
+                PermissionSet: 'Sync',
+            },
+        ];
+        const ResourcesForTests: Collection[] = [
+            {
+                Name: 'assigned_users',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                Fields: {
+                    Manager: {
+                        Type: 'Resource',
+                        Resource: 'users',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                    Subordinate: {
+                        Type: 'Resource',
+                        Resource: 'users',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                },
+                SyncData: {
+                    Sync: true,
+                    Associative: {
+                        FieldID1: 'Manager',
+                        FieldID2: 'Subordinate',
+                    },
+                },
+            },
+            {
+                Name: 'account_users',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                Fields: {
+                    Account: {
+                        Type: 'Resource',
+                        Resource: 'accounts',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                    User: {
+                        Type: 'Resource',
+                        Resource: 'users',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                },
+                SyncData: {
+                    Sync: true,
+                    Associative: {
+                        FieldID1: 'Account',
+                        FieldID2: 'User',
+                    },
+                },
+            },
+            {
+                Name: 'accounts',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                SyncData: {
+                    Sync: true,
+                },
+            },
+            {
+                Name: 'users',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                SyncData: {
+                    Sync: true,
+                },
+                Fields: {
+                    Profile: {
+                        Type: 'Resource',
+                        Resource: 'profiles',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                    Role: {
+                        Type: 'Resource',
+                        Resource: 'roles',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                },
+            },
+            {
+                Name: 'profiles',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                SyncData: {
+                    Sync: true,
+                },
+            },
+            {
+                Name: 'roles',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                SyncData: {
+                    Sync: true,
+                },
+            },
+            {
+                Name: 'roles_roles',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                SyncData: {
+                    Sync: true,
+                    Associative: {
+                        FieldID1: 'Role',
+                        FieldID2: 'ParentRole',
+                    },
+                },
+                Fields: {
+                    Role: {
+                        Type: 'Resource',
+                        Resource: 'roles',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                    ParentRole: {
+                        Type: 'Resource',
+                        Resource: 'roles',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                },
+            },
+            {
+                Name: 'a',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                SyncData: {
+                    Sync: true,
+                },
+                Fields: {
+                    bRef: {
+                        Type: 'Resource',
+                        ApplySystemFilter: true,
+                        Resource: 'b',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                },
+            },
+            {
+                Name: 'b',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                Fields: {
+                    userRef: {
+                        Type: 'Resource',
+                        ApplySystemFilter: true,
+                        Resource: 'users',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                },
+                SyncData: {
+                    Sync: true,
+                },
+            },
+            {
+                Name: 'c',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                Fields: {
+                    bRef: {
+                        Type: 'Resource',
+                        ApplySystemFilter: true,
+                        Resource: 'b',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                },
+                SyncData: {
+                    Sync: true,
+                },
+            },
+            {
+                Name: 'Divisions',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                SyncData: {
+                    Sync: true,
+                },
+            },
+            {
+                Name: 'user_divisions',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                Fields: {
+                    userRef: {
+                        Type: 'Resource',
+                        ApplySystemFilter: true,
+                        Resource: 'users',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                    divisionRef: {
+                        Type: 'Resource',
+                        ApplySystemFilter: true,
+                        Resource: 'Divisions',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                },
+                SyncData: {
+                    Sync: true,
+                    Associative: {
+                        FieldID1: 'divisionRef',
+                        FieldID2: 'userRef',
+                    },
+                },
+            },
+            {
+                Name: 'user_divisions_non_associative',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                Fields: {
+                    userRef: {
+                        Type: 'Resource',
+                        ApplySystemFilter: true,
+                        Resource: 'users',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                    divisionRef: {
+                        Type: 'Resource',
+                        ApplySystemFilter: true,
+                        Resource: 'Divisions',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                },
+                SyncData: {
+                    Sync: true,
+                },
+            },
+            {
+                Name: 'toDivisions',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                SyncData: {
+                    Sync: true,
+                },
+                Fields: {
+                    divisionRef: {
+                        Type: 'Resource',
+                        ApplySystemFilter: true,
+                        Resource: 'Divisions',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                },
+            },
+            {
+                Name: 'toDivisionstoDivisionstoDivisions',
+                AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                SyncData: {
+                    Sync: true,
+                },
+                Fields: {
+                    divisionsRef: {
+                        Type: 'Resource',
+                        ApplySystemFilter: true,
+                        Resource: 'Divisions',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                    accountRef: {
+                        ApplySystemFilter: true,
+                        Type: 'Resource',
+                        Resource: 'accounts',
+                        AddonUUID: CORE_RESOURCES_ADDON_UUID,
+                        Mandatory: false,
+                        Description: ""
+                    },
+                },
+            },
+        ];
+
+        this.resources.push(...ResourcesForTests);
+        this.filterRules.push(...ProfileFiltersForTests);
+        this.filterObjects.push(...FiltersForTests);
+
+        this.filterObjects.forEach((filterObject) => {
+            this.filterObjectsMap.set(filterObject.Key, filterObject);
+            this.filterKeyToNameMap.set(filterObject.Key, filterObject.Name);
+        });
+    }
 
     public getDataSource() {
         return {
             init: async (state) => {
                 // TODO: Combine into a single call
+                this.addMockedData();
                 const searchedSyncedResources = this.getSearchedSyncedResources(state.searchString);
                 const resourceAndProfile = this.addProfileToResource(searchedSyncedResources);
-                const resourceAndProfileWithSyncRule = this.addSyncRuleToResource(resourceAndProfile);
+                const resourceAndProfileWithSyncRule = this.addFilterObjectToResourceAndProfile(resourceAndProfile);
                 const listData = this.buildListData(resourceAndProfileWithSyncRule);
-                debugger;
                 return {
                     dataView: {
                         Context: {
@@ -180,19 +683,18 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
         return resourceAndProfile;
     }
 
-    private addSyncRuleToResource(resourceAndProfilePair: ResourceAndProfilePair[]): ResourceProfileAndSyncRule[] {
+    private addFilterObjectToResourceAndProfile(resourceAndProfilePair: ResourceAndProfilePair[]): ResourceProfileAndSyncRule[] {
         const resourceProfileAndSyncRule: ResourceProfileAndSyncRule[] = [];
 
         resourceAndProfilePair.forEach((resourceAndProfile) => {
             const filtersObjects = this.filterObjects.filter((filterObject) => filterObject.Key === resourceAndProfile.Profile.Filter);
-            debugger;
-            filtersObjects.forEach((filterObject) => {
+            // filtersObjects.forEach((filterObject) => {
                 resourceProfileAndSyncRule.push({
                     Resource: resourceAndProfile.Resource,
                     Profile: resourceAndProfile.Profile,
-                    FilterObject: filterObject,
+                    FilterObjects: filtersObjects,
                 });
-            });
+            // });
         });
 
         return resourceProfileAndSyncRule;
@@ -204,7 +706,7 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
         resourceProfileAndSyncRule.forEach((resourceProfileAndSyncRule) => {
             listData.push({
                 ResourceName: resourceProfileAndSyncRule.Resource.Name,
-                Profile: this.getProfileName(resourceProfileAndSyncRule.Profile.EmployeeType),
+                Profile: UtilsService.getProfileName(resourceProfileAndSyncRule.Profile.EmployeeType),
                 SyncRuleText: this.getSyncRuleText(resourceProfileAndSyncRule),
             });
         });
@@ -213,30 +715,42 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
     }
 
     private getSyncRuleText(resourceProfileAndSyncRule: ResourceProfileAndSyncRule): string {
-        if (this.isLocked(resourceProfileAndSyncRule.FilterObject)) { // TODO: how can I know if this is a system filter?
-            return `${resourceProfileAndSyncRule.FilterObject.Field} is ${resourceProfileAndSyncRule.FilterObject.Name}`;
+        const syncRuleTextPerField: string[] = [];
+
+        if (resourceProfileAndSyncRule.FilterObjects.length > 1) {
+            debugger;
+            console.log('ERROR: more than one filter object');
+        }
+
+        resourceProfileAndSyncRule.FilterObjects.forEach((filterObject) => {
+            const syncRuleText = [];
+            this.recursiveGetSyncRuleText(filterObject, syncRuleText);
+            syncRuleTextPerField.push(syncRuleText.join(' → '));
+        });
+
+        // TODO: handle SYNC_RULE_ERROR
+        return syncRuleTextPerField.join(' →→ ');
+    }
+
+    /**
+     * @param syncRuleTextPerField each element is a filter in the chain.
+     * @returns an array of sync rule texts per field.
+     */
+    private recursiveGetSyncRuleText(filterObject: FilterObject, syncRuleText: string[]): void {
+        
+        // Base case - the filter is a system filter
+        if (UtilsService.isLocked(filterObject)) {
+            syncRuleText.push(`${filterObject.Field} is ${filterObject.Name}`);
         } else {
-            return 'else';
+            // If the filter is not a system filter, recursive call
+            const nextFilter = this.filterObjectsMap.get(filterObject.PreviousFilter);
+            if (filterObject === undefined) {
+                syncRuleText.push(this.SYNC_RULE_ERROR);
+            } else {
+                syncRuleText.push(`${filterObject.Field} in ${filterObject.Name}`);
+                this.recursiveGetSyncRuleText(nextFilter, syncRuleText);
+            }
         }
-    }
-
-    // TODO: was copied, move to a shared location
-    private getProfileName(employeeType: number) {
-        switch (employeeType) {
-            case 1:
-                return 'Admin';
-            case 2:
-                return 'Rep';
-            case 3:
-                return 'Buyer';
-            default:
-                return 'Unknown';
-        }
-    }
-
-    // TODO: was copied, move to a shared location
-    private isLocked(filterObject: FilterObject) {
-        return filterObject.AddonUUID !== undefined;
     }
 
     public emitChangesEvent() {
