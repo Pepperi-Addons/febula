@@ -8,7 +8,8 @@
     "build": "cd ./client-side && npm run build && cd .. && cd ./server-side && npm run build && cd ..",
     "init": "cd ./client-side && npm install --force && cd .. && cd ./server-side && npm install --force && cd ..",
     "publish-addon": "npm run build && publish-addon",
-    "cpi-publish-addon": "cd ./cpi-side && npm run build:debug && cd .. && cpi-node-debug"
+    "cpi-publish-addon": "cd ./cpi-side && npm run build:debug && cd .. && cpi-node-debug",
+    "start-client": "cd ./client-side && npm run start && cd .."
   },
   "keywords": [],
   "author": "",

@@ -1,8 +1,9 @@
+import { EmployeeType } from "../types";
 import { FilterObject } from "../../../shared/types";
 
 export class UtilsService {
 
-    public static getProfileName(employeeType: number) {
+    public static getProfileName(employeeType: EmployeeType): string {
         switch (employeeType) {
             case 1:
                 return 'Admin';
