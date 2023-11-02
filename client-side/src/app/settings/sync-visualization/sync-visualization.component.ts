@@ -341,9 +341,7 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
         const previousFilterName = this.filterKeyToNameMap.get(filterObject.PreviousFilter);
         
         // Base case - the filter is a system filter
-        if (UtilsService.isLocked(filterObject)) {
-            // syncRuleText.push(`${filterObject.Name} = all ${filterObject.Field} from ${filterObject.Resource} where ${filterObject.PreviousField} is ${previousFilterName}`);
-        } else {
+        if (UtilsService.isLocked(filterObject) === false) {
             // If the filter is not a system filter, recursive call
             const nextFilter = this.filterObjectsMap.get(filterObject.PreviousFilter);
             if (filterObject === undefined) {
