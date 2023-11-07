@@ -4,7 +4,6 @@ import { filterObjectJsonschema, filterObjectSchema, filterObjectSchemaName } fr
 import { BasicFilterRuleData, FilterObject } from "../../shared/types";
 import { BasicTableService } from "./basic-table.service";
 
-
 export class FilterObjectService extends BasicTableService<FilterObject>{
     schemaName: string;
     schema: AddonDataScheme;
@@ -140,12 +139,15 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
 
     async upsertBasicFilterObjects(): Promise<BasicFilterRuleData[]> {
         try {
+            const allFilterObjects = await this.get();
+
             const currentUserFilterObject: FilterObject = {
                 Name: 'Current user',
                 Resource: 'users',
                 Field: 'Key'
             };
 
+            await this.getSystemFilterObjectKey(allFilterObjects, currentUserFilterObject);
             const usersResult = await this.upsert(currentUserFilterObject, true);
 
             const currentUserResourceAndKey = {
@@ -161,6 +163,7 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
                 PreviousField: 'User'
             };
 
+            await this.getSystemFilterObjectKey(allFilterObjects, assignedAccountsFilterObject);
             const accountUsersResult = await this.upsert(assignedAccountsFilterObject, true);
 
             const assignedAccountsResourceAndKey = {
@@ -176,6 +179,7 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
                 PreviousField: 'Key'
             };
 
+            await this.getSystemFilterObjectKey(allFilterObjects, profileFilterObject);
             const profileResult = await this.upsert(profileFilterObject, true);
 
             const profileResourceAndKey = {
@@ -185,10 +189,48 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
 
             return [currentUserResourceAndKey, assignedAccountsResourceAndKey, profileResourceAndKey];
         }
-        catch (ex) {
-            console.error(`upsertBasicFilterObjects failed: ${ex}`);
-            throw ex;
+        catch (error) {
+            console.error(`upsertBasicFilterObjects failed: ${(error as Error).message})}`);
+            throw error;
         }
+    }
 
+    /**
+     * Searches for a system filter object with the same properties as the given filter object.
+     * If found, update the given filter object with the system filter object's key and delete all the newer duplicate system filter objects.
+     * @param currentFilterObject the filter object to search for.
+     */
+    private async getSystemFilterObjectKey(allFilterObjects: FilterObject[], currentFilterObject: FilterObject): Promise<void> {
+
+        // Find all filter objects that have the same properties as the given filter object,
+        // there could be more than one if Febula was upgraded/installed multiple times in the past (DI-25619).
+        const systemFilterObjects = allFilterObjects.filter((filterObject) => {
+            return filterObject.AddonUUID !== undefined &&
+                currentFilterObject.Name === filterObject.Name &&
+                currentFilterObject.Resource === filterObject.Resource &&
+                currentFilterObject.Field === filterObject.Field &&
+                (currentFilterObject.PreviousField === undefined || currentFilterObject.PreviousField === filterObject.PreviousField);
+        });
+
+        // If a system filter object was found, update the given filter object with the system filter object's key,
+        // log and delete all the other system filter objects.
+        if (systemFilterObjects.length > 0) {
+
+            if (systemFilterObjects.length > 1) {
+                console.warn(`getSystemFilterObject: found more than one (${systemFilterObjects.length}) system filter ('${currentFilterObject.Name}')`);
+            }
+
+            // Sort the system filter objects by creation time, so that the oldest one will be the first in the array.
+            // This is done so that we can delete all the newer system filter objects and keep the oldest one.
+            systemFilterObjects.sort((filterObjectA, filterObjectB) => {
+                const creationTimeA = new Date(filterObjectA.CreationDateTime!);
+                const creationTimeB = new Date(filterObjectB.CreationDateTime!);
+                return creationTimeA.getTime() - creationTimeB.getTime();
+            });
+            currentFilterObject.Key = systemFilterObjects[0].Key;
+
+            const filtersToDelete = systemFilterObjects.slice(1).map((filterObject) => filterObject.Key!);
+            await this.delete(filtersToDelete);
+        }
     }
 }
