@@ -3,6 +3,7 @@ import { AddonDataScheme, Collection } from "@pepperi-addons/papi-sdk";
 import { filterObjectJsonschema, filterObjectSchema, filterObjectSchemaName } from "../schemas-definition";
 import { BasicFilterRuleData, FilterObject } from "../../shared/types";
 import { BasicTableService } from "./basic-table.service";
+import { DuplicateFiltersBugFixService } from "./duplicate-filters-bug-fix.service";
 
 export class FilterObjectService extends BasicTableService<FilterObject>{
     schemaName: string;
@@ -227,10 +228,17 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
                 const creationTimeB = new Date(filterObjectB.CreationDateTime!);
                 return creationTimeA.getTime() - creationTimeB.getTime();
             });
-            currentFilterObject.Key = systemFilterObjects[0].Key;
+            const filterKeyToUse = systemFilterObjects[0].Key!;
+            currentFilterObject.Key = filterKeyToUse;
 
-            const filtersToDelete = systemFilterObjects.slice(1).map((filterObject) => filterObject.Key!);
-            await this.delete(filtersToDelete);
+            const filtersKeysToDelete = systemFilterObjects.slice(1).map((filterObject) => filterObject.Key!);
+
+            // Fixing soon to be broken filter-rules.
+            const duplicateFiltersBugFixService = new DuplicateFiltersBugFixService(this.client);
+            await duplicateFiltersBugFixService.fixFilterRules(filtersKeysToDelete, filterKeyToUse);
+
+            // deleting duplicated filters
+            await this.delete(filtersKeysToDelete);
         }
     }
 }
