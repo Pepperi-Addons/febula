@@ -5,7 +5,6 @@ import { BasicFilterRuleData, FilterObject, FilterRule } from "../../shared/type
 import { BasicTableService } from "./basic-table.service";
 import { FilterObjectService } from "./filter-object.service";
 import { Promise } from "bluebird";
-import { v4 as uuid } from "uuid";
 
 export class FilterRuleService extends BasicTableService<FilterRule>{
     schemaName: string;
@@ -191,5 +190,4 @@ export class FilterRuleService extends BasicTableService<FilterRule>{
             throw ex;
         }
     }
-
 }
