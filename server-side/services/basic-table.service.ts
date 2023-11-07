@@ -110,11 +110,11 @@ export abstract class BasicTableService<T extends AddonData>{
 
     // validate schema
     validateSchema(addonData: T): void {
-        const v = new Validator();
-        const result = v.validate(addonData, this.jsonSchemaToValidate);
+        const validator = new Validator();
+        const result = validator.validate(addonData, this.jsonSchemaToValidate);
+        
         if (!result.valid) {
             throw new Error(`Scheme validation failed for ${this.schemaName} object: ${JSON.stringify(addonData)}\n${result.errors}`);
-
         }
     }
 
@@ -138,9 +138,9 @@ export abstract class BasicTableService<T extends AddonData>{
         try {
             return await this.postData(addonData);
         }
-        catch (ex) {
-            console.error(`Failed to upsert data to ${this.schemaName} table with error: ${ex}`);
-            throw ex;
+        catch (error) {
+            console.error(`Failed to upsert data to ${this.schemaName} table with error: ${(error as Error).message}`);
+            throw error;
         }
     }
 
