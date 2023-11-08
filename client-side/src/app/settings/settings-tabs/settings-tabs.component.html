@@ -17,6 +17,11 @@
             <mat-tab label="{{ 'Online-Filters' | translate }}">
                 <profile-filters-list *ngIf="currentTabIndex == 2" [permissionType]="'Online'" [resources]="resources" [filterObjects]="filterObjects" [filterRules]="filterRules" [filterKeyToNameMap]="filterKeyToNameMap" (changesEvent)="onFilterRuleChange($event)"></profile-filters-list>
             </mat-tab>
+
+            <mat-tab label="{{ 'Sync-Visualization' | translate }}">
+                <sync-visualization *ngIf="currentTabIndex == 3" [resources]="resources" [filterObjects]="filterObjects" [filterRules]="filterRules" [filterKeyToNameMap]="filterKeyToNameMap"></sync-visualization>
+            </mat-tab>
+
         </mat-tab-group>
     </ng-container>
 </pep-page-layout>

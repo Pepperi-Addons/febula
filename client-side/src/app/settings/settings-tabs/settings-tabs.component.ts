@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { PepAddonService } from '@pepperi-addons/ngx-lib';
-import { FomoService } from 'src/services/fomo.service';
+import { FebulaService } from '../../../services/febula.service';
 import { FilterObject, FilterRule } from '../../../../../shared/types';
 import { Collection } from '@pepperi-addons/papi-sdk/dist/entities';
 
@@ -12,22 +12,20 @@ import { Collection } from '@pepperi-addons/papi-sdk/dist/entities';
 })
 export class SettingsTabsComponent implements OnInit {
 
-
-    currentTabIndex : 0 | 1 | 2 = 0;
+    currentTabIndex : 0 | 1 | 2 | 3 = 0;
     hostEvents: any;
-    fomoService: FomoService;
+    febulaService: FebulaService;
     filterObjects: FilterObject[] = [];
     resources: Collection[] = [];
     filterRules: FilterRule[] = [];
     filterKeyToNameMap: Map<string, string> = new Map<string, string>();
-
 
     constructor(
         public activatedRoute: ActivatedRoute,
         public pepAddonService: PepAddonService
 
     ) {
-        this.fomoService = new FomoService(this.pepAddonService);
+        this.febulaService = new FebulaService(this.pepAddonService);
     }
 
     async ngOnInit() {
@@ -39,43 +37,41 @@ export class SettingsTabsComponent implements OnInit {
         ]);
     }
 
-    private async updateFilterObjects() {
-        this.filterObjects = await this.fomoService.getFilterObjects();
+    private async updateFilterObjects(): Promise<void> {
+        this.filterObjects = await this.febulaService.getFilterObjects();
     }
 
-    private async updateResources() {
-        this.resources = await this.fomoService.getResources();
+    private async updateResources(): Promise<void> {
+        this.resources = await this.febulaService.getResources();
     }
-    
-    private updateFilterKeyToNameMap(filterObjects: FilterObject[]) {
+
+    private async updateFilterRules(): Promise<void> {
+        this.filterRules = await this.febulaService.getFilterRules();
+        const keyList = this.filterRules.map(filterRule => filterRule.Filter);
+        const uniqueKeys = Array.from(new Set(keyList));
+        await this.updateFilterObjectNames(uniqueKeys);
+    }
+
+    private async updateFilterObjectNames(keyList: string[]): Promise<void> {
+        const filterObjects = await this.febulaService.getFilterObjectsByKeys(keyList);
+        this.updateFilterKeyToNameMap(filterObjects);
+    }   
+
+    private updateFilterKeyToNameMap(filterObjects: FilterObject[]): void {
         filterObjects.forEach(filterObject => {
             this.filterKeyToNameMap.set(filterObject.Key, filterObject.Name);
         });
     }
 
-    private async updateFilterObjectNames(keyList: string[]) {
-        const filterObjects = await this.fomoService.getFilterObjectsByKeys(keyList);
-        this.updateFilterKeyToNameMap(filterObjects);
-    }
-
-    private async updateFilterRules() {
-        this.filterRules = await this.fomoService.getFilterRules();
-        const keyList = this.filterRules.map(filterRule => filterRule.Filter);
-        const uniqueKeys = Array.from(new Set(keyList));
-        await this.updateFilterObjectNames(uniqueKeys);
-    }
-    
-
-    async onFilterObjectChange($event) { 
+    public async onFilterObjectChange(_$event: any): Promise<void> { 
         await this.updateFilterObjects();
     }
 
-    async onFilterRuleChange($event) { 
+    public async onFilterRuleChange(_$event: any): Promise<void> { 
         await this.updateFilterRules()
     }
 
-    onTabChange($event) {
+    public onTabChange($event: any): void {
         this.currentTabIndex = $event.index;
     }
-
 }

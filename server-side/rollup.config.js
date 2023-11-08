@@ -26,7 +26,7 @@ export default config.Endpoints.map(endpoint => {
           }),
           resolve(),
           commonjs(),
-          json()
+          json(),
         ]
        }
     }

@@ -2,23 +2,24 @@ import { IPepGenericFormDataView, IPepGenericFormDataViewField } from "@pepperi-
 import { PepAddonService } from "@pepperi-addons/ngx-lib";
 import { Collection } from "@pepperi-addons/papi-sdk/dist/entities";
 import { FilterObject, FilterRule, PermissionSetValues } from "../../../shared/types";
-import { FomoService } from "./fomo.service";
+import { FebulaService } from "./febula.service";
+import { EditorMode } from "./consts";
 
 export class ProfileFiltersFormService {
 
-    fomoService: FomoService;
-    mode: 'Add' | 'Edit'
+    private febulaService: FebulaService;
+    private mode: EditorMode;
     private filterRule: FilterRule;
     private resources: Collection[];
-    private profileOptions: string[] = ["Admin", "Rep", "Buyer"];
+    private readonly profileOptions: string[] = ["Admin", "Rep", "Buyer"];
     private resourceOptions: string[] = [];
     private filterOptions: string[] = [];
     private chosenResource: Collection;
     private filterObjectList: FilterObject[];
     private filterRuleList: FilterRule[];
 
-    constructor(private pepAddonService: PepAddonService, filterRuleList: FilterRule[], filterObjectList: FilterObject[], resourceList: Collection[], filterRule?: FilterRule, permissionType?: PermissionSetValues) {
-        this.fomoService = new FomoService(pepAddonService);
+    constructor(pepAddonService: PepAddonService, filterRuleList: FilterRule[], filterObjectList: FilterObject[], resourceList: Collection[], filterRule?: FilterRule, permissionType?: PermissionSetValues) {
+        this.febulaService = new FebulaService(pepAddonService);
         this.filterRuleList = filterRuleList;
         this.filterObjectList = filterObjectList;
         this.resources = resourceList;
@@ -57,7 +58,7 @@ export class ProfileFiltersFormService {
         }
     }
 
-    getFilterRule(): FilterRule {
+    public getFilterRule(): FilterRule {
         return { ...this.filterRule, Profile: this.getProfileName(this.filterRule.EmployeeType) };
     }
 
@@ -99,7 +100,7 @@ export class ProfileFiltersFormService {
         this.filterOptions = this.filterRule.Resource ? this.filterObjectList.filter((filterObject) => filterByResourceField(filterObject) && filterProfileFilterCombination(filterObject)).map((filterObject) => filterObject.Name) : [];
     }
 
-    init(): void {
+    public init(): void {
         if (this.filterRule?.EmployeeType) {
             this.setResourceOptions();
         }
@@ -111,24 +112,26 @@ export class ProfileFiltersFormService {
     }
 
     //#region setters
-    setProfile(profile: string) {
+
+    public setProfile(profile: string) {
         this.filterRule.EmployeeType = this.getProfileNumber(profile);
         this.setResource('');
         this.setResourceOptions();
     }
 
-    setResource(resource: string) {
+    public setResource(resource: string) {
         this.filterRule.Resource = resource;
         this.chosenResource = this.resources.find((resource) => resource.Name === this.filterRule.Resource);
         this.setFilter('');
         this.setFilterOptions();
     }
 
-    setFilter(filter: string) {
+    public setFilter(filter: string) {
         const chosenFilterObject = this.filterObjectList.find((filterObject) => filterObject.Name === filter);
         this.filterRule.Filter = chosenFilterObject ? chosenFilterObject.Key : '';
         this.filterRule.FilterName = chosenFilterObject ? chosenFilterObject.Name : '';
     }
+
     // #endregion
 
     private stringArrayToOptionsArray(array: string[]): any[] {
@@ -140,32 +143,32 @@ export class ProfileFiltersFormService {
         })
     }
 
-    getProfileOptions(): {
+    private getProfileOptions(): {
         Key: string;
         Value: string;
     }[] {
         return this.stringArrayToOptionsArray(this.profileOptions);
     }
 
-    getResourceOptions(): {
+    private getResourceOptions(): {
         Key: string;
         Value: string;
     }[] {
         return this.stringArrayToOptionsArray(this.resourceOptions);
     }
 
-    getFilterOptions(): {
+    private getFilterOptions(): {
         Key: string;
         Value: string;
     }[] {
         return this.stringArrayToOptionsArray(this.filterOptions);
     }
 
-    async save(): Promise<FilterRule> {
-        return await this.fomoService.upsertFilterRule(this.filterRule);
+    public async save(): Promise<FilterRule> {
+        return await this.febulaService.upsertFilterRule(this.filterRule);
     }
 
-    getDataView(): IPepGenericFormDataView {
+    public getDataView(): IPepGenericFormDataView {
         const profileField: IPepGenericFormDataViewField =
             {
                 "FieldID": "Profile",

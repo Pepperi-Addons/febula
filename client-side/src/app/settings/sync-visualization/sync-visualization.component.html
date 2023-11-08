@@ -1,0 +1,11 @@
+
+<pep-page-layout>
+    <ng-container pep-main-area>
+        <pep-generic-list [hideSelectAll]="true" [showSearch]="true" title="Sync Visualization" [dataSource]="listDataSource"
+            [uuidMapping]="'SyncRuleText'" [showTopBar]="true" [selectionType]="'none'" [inline]="true" (fieldClick)="onResourceNameClick($event)"
+            [noDataFoundMsg]="'No Data Found'">
+        </pep-generic-list>
+    </ng-container>
+</pep-page-layout>
+
+<pep-size-detector></pep-size-detector>

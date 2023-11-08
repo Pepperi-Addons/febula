@@ -1,4 +1,6 @@
+import { EmployeeType } from "../client-side/src/types";
 import { AddonData } from "../server-side/node_modules/@pepperi-addons/papi-sdk/dist";
+
 /**
 * Key?: string; - UUID
 *
@@ -39,7 +41,7 @@ export interface FilterObject extends AddonData {
  */
 export interface FilterRule extends AddonData {
     Key?: string;
-    EmployeeType: 1 | 2 | 3; // 1 = Admin, 2 = Rep, 3 = Buyer
+    EmployeeType: EmployeeType;
     Resource: string;
     Filter: string;
     AddonUUID?: string;
