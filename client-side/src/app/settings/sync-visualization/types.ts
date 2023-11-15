@@ -21,6 +21,7 @@ export interface ReferenceFieldData {
 }
 
 export interface ListData {
+    ID: string;
     ResourceName: string;
     Profile: string;
     ReferenceFields: string;

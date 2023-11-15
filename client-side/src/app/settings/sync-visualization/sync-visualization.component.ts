@@ -1,12 +1,9 @@
 import { Collection, SchemeField } from "@pepperi-addons/papi-sdk/dist/entities";
 import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
 import { IPepGenericListDataSource, IPepGenericListParams } from "@pepperi-addons/ngx-composite-lib/generic-list";
-import { PepAddonService, PepLayoutService, PepScreenSizeType } from '@pepperi-addons/ngx-lib';
-import { TranslateService } from '@ngx-translate/core';
-import { ActivatedRoute, Router } from "@angular/router";
+import { PepAddonService, PepLayoutService, PepScreenSizeType, PepSessionService } from '@pepperi-addons/ngx-lib';
 import { Component, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges } from "@angular/core";
 import { FilterObject, FilterRule, PermissionSetValues } from "../../../../../shared/types";
-import { FebulaService } from "../../../services/febula.service";
 import { UtilsService } from "../../../services/utils.service";
 import { ResourceAndEmployeeType, SyncRuleParameters, ReferenceFieldData, ListData } from "./types";
 import { EMPLOYEE_TYPES } from "../../../types";
@@ -26,29 +23,29 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
     @Output() changesEvent: EventEmitter<any> = new EventEmitter<any>();
 
     screenSize: PepScreenSizeType;
-    febulaService: FebulaService;
     filterObjectsMap: Map<string, FilterObject> = new Map<string, FilterObject>();
     listDataSource: IPepGenericListDataSource = this.getDataSource();
+    private listData: ListData[];
     private readonly SYNC_RULE_ERROR = 'ERROR in filter chain';
+    private readonly BI_OPEN = '<b><i>'
+    private readonly BI_CLOSE = '</b></i>';
 
     constructor(
-        public router: Router,
-        public route: ActivatedRoute,
-        public layoutService: PepLayoutService,
-        public translate: TranslateService,
-        public pepAddonService: PepAddonService,
-        public dialogService: PepDialogService,
+        private pepAddonService: PepAddonService,
+        private layoutService: PepLayoutService,
+        private dialogService: PepDialogService,
     ) {
+
         this.layoutService.onResize$.subscribe(size => {
             this.screenSize = size;
         });
-        this.febulaService = new FebulaService(this.pepAddonService);
+        this.listData = [];
     }
-    
+
     public getDataSource(): IPepGenericListDataSource {
         return {
             init: async (state: IPepGenericListParams) => {
-                const listData = this.initDataSource(state.searchString);
+                this.initDataSource(state.searchString);
                 return {
                     dataView: {
                         Context: {
@@ -101,14 +98,14 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
                         FrozenColumnsCount: 0,
                         MinimumColumnWidth: 0
                     },
-                    items: listData,
-                    totalCount: listData.length
+                    items: this.listData,
+                    totalCount: this.listData.length
                 }
             }
         };
     }
 
-    ngOnInit() {
+    ngOnInit(): void {
         this.updateFilterObjectsMap(this.filterObjects);
     }
 
@@ -118,9 +115,16 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
     }
 
     protected onResourceNameClick($event: any) {
+        const rowData = this.listData.find((row) => row.ID === $event.id);
+
+        if (rowData === undefined) {
+            console.warn(`Could not find row with ID ${$event.id}`);
+            return;
+        }
+
         const dialogData = new PepDialogData({
-            title: "Sync Visualization",
-            content: $event.id, // Generic list 'uuidMapping' is set to be SyncRuleText
+            title: `${rowData.ResourceName} - ${rowData.Profile}`,
+            content: rowData.SyncRuleText,
             actionsType: "close",
             showClose: false,
         });
@@ -135,10 +139,10 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
         });
     }
 
-    private initDataSource(searchString?: string): ListData[] {
+    private initDataSource(searchString?: string): void {
         const resourceAndEmployeeType = this.getResourcesAndEmployeeTypes(searchString);
         const syncRuleParameters = this.getSyncRuleParameters(resourceAndEmployeeType);
-        return this.buildListData(syncRuleParameters);
+        this.listData = this.buildListData(syncRuleParameters);
     }
 
     /**
@@ -193,15 +197,18 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
         // Foreach ResourceAndEmployeeType find reference-fields+filters that are related to it
         resourcesAndEmployeeTypes.forEach((resourceAndEmployeeType) => {
             const filterRules: FilterRule[] = [];
+            const referenceFields: string[] = [];
+
             const refData = this.getReferenceFieldsData(resourceAndEmployeeType.Resource);
 
             // Get all filter rules that are related to the resource
             refData.forEach((refDatum) => {
-                const relatedFilterRule = syncFiltersRules.find((filterRule) => 
+                const relatedFilterRule = syncFiltersRules.find((filterRule) =>
                     filterRule.Resource === refDatum.ReferencedResourceName && filterRule.EmployeeType === resourceAndEmployeeType.EmployeeType
                 );
 
                 if (relatedFilterRule !== undefined) {
+                    referenceFields.push(refDatum.FieldID);
                     filterRules.push(relatedFilterRule);
                 }
             });
@@ -211,7 +218,7 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
                 resourceEmployeeTypeAndFilterRule.push({
                     Resource: resourceAndEmployeeType.Resource,
                     EmployeeType: resourceAndEmployeeType.EmployeeType,
-                    ReferenceFields: refData.map((refDatum) => refDatum.FieldID),
+                    ReferenceFields: referenceFields,
                     FilterRules: filterRules,
                 });
             }
@@ -280,21 +287,26 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
      */
     private buildListData(resourcesEmployeeTypesAndFilterRules: SyncRuleParameters[]): ListData[] {
         const listData: ListData[] = [];
+        let id = 0;
 
         resourcesEmployeeTypesAndFilterRules.forEach((resourceEmployeeTypeAndFilterRules) => {
 
             const syncRulesText: string[] = [];
-            resourceEmployeeTypeAndFilterRules.FilterRules.forEach((filterRule) => {
+            resourceEmployeeTypeAndFilterRules.FilterRules.forEach((filterRule, index) => {
                 const filterObject = this.filterObjectsMap.get(filterRule.Filter);
-                syncRulesText.push(filterObject === undefined ? this.SYNC_RULE_ERROR : this.getSyncRuleText(filterRule, filterObject));
+                const fieldName = resourceEmployeeTypeAndFilterRules.ReferenceFields[index];
+                syncRulesText.push(filterObject === undefined ? this.SYNC_RULE_ERROR : this.getSyncRuleText(fieldName, filterRule, filterObject));
             });
 
             listData.push({
+                ID: id.toString(),
                 ResourceName: resourceEmployeeTypeAndFilterRules.Resource.Name,
                 Profile: UtilsService.getProfileName(resourceEmployeeTypeAndFilterRules.EmployeeType),
                 SyncRuleText: syncRulesText.join(''),
                 ReferenceFields: resourceEmployeeTypeAndFilterRules.ReferenceFields.join(', ')
             });
+
+            id++;
         });
 
         return listData;
@@ -306,11 +318,11 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
      * @param filterObject - The rest of the lines are based on the filter objects chain.
      * @returns sync rule text.
      */
-    private getSyncRuleText(filterRule: FilterRule, filterObject: FilterObject): string {
+    private getSyncRuleText(fieldName: string, filterRule: FilterRule, filterObject: FilterObject): string {
 
         // Builds the sync rule text
         const filterName = this.filterKeyToNameMap.get(filterRule.Filter);
-        const filterObjectTextParts = [`Field ${filterRule.Resource} in filter ${filterName}`];
+        const filterObjectTextParts = [`Field ${this.BI_OPEN}${fieldName}${this.BI_CLOSE} in filter ${this.BI_OPEN}${filterName}${this.BI_CLOSE}`];
 
         // We pass the filterObjectTextParts array after inserting the first line (which comes from the filter rule).
         // The recursive function will add the rest of the lines.
@@ -339,17 +351,21 @@ export class SyncVisualizationComponent implements OnInit, OnChanges {
      */
     private recursiveGetSyncRuleText(filterObject: FilterObject, syncRuleText: string[]): void {
         const previousFilterName = this.filterKeyToNameMap.get(filterObject.PreviousFilter);
-        
+
         // Base case - the filter is a system filter
-        if (UtilsService.isLocked(filterObject)) {
-            // syncRuleText.push(`${filterObject.Name} = all ${filterObject.Field} from ${filterObject.Resource} where ${filterObject.PreviousField} is ${previousFilterName}`);
-        } else {
+        if (UtilsService.isLocked(filterObject) === false) {
             // If the filter is not a system filter, recursive call
             const nextFilter = this.filterObjectsMap.get(filterObject.PreviousFilter);
             if (filterObject === undefined) {
                 syncRuleText.push(this.SYNC_RULE_ERROR);
             } else {
-                syncRuleText.push(`${filterObject.Name} = all ${filterObject.Field} from ${filterObject.Resource} where ${filterObject.PreviousField} in filter ${previousFilterName}`);
+                const filterName = `${this.BI_OPEN}${filterObject.Name}${this.BI_CLOSE}`;
+                const filterField = `${this.BI_OPEN}${filterObject.Field}${this.BI_CLOSE}`;
+                const resource = `${this.BI_OPEN}${filterObject.Resource}${this.BI_CLOSE}`;
+                const filterPreviousField = `${this.BI_OPEN}${filterObject.PreviousField}${this.BI_CLOSE}`;
+                const previousFilter = `${this.BI_OPEN}${previousFilterName}${this.BI_CLOSE}`;
+
+                syncRuleText.push(`${filterName} = all ${filterField} from ${resource} where ${filterPreviousField} in filter ${previousFilter}`);
                 this.recursiveGetSyncRuleText(nextFilter, syncRuleText);
             }
         }
