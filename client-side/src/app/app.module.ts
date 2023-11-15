@@ -1,24 +1,23 @@
 import { DoBootstrap, Injector, NgModule, Type } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PepAddonService } from '@pepperi-addons/ngx-lib';
-
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app.routes';
-
 import { SettingsComponent, SettingsModule } from './settings';
-
 // import { BlockModule, BlockComponent } from './block';
 // import { BlockEditorModule, BlockEditorComponent } from './block-editor';
-
 import { config } from './app.config';
+import { HttpClientModule } from '@angular/common/http';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
     declarations: [
         AppComponent,
     ],
     imports: [
+        BrowserAnimationsModule,
+        HttpClientModule,
         BrowserModule,
         // BlockModule,
         // BlockEditorModule,
@@ -33,7 +32,8 @@ import { config } from './app.config';
         }),
         AppRoutingModule,
     ],
-    providers: [],
+    providers: [
+    ],
     bootstrap: [
         // AppComponent
     ]

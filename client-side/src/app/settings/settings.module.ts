@@ -1,19 +1,12 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
-
 import { PepNgxLibModule, PepAddonService } from '@pepperi-addons/ngx-lib';
-
 import { SettingsRoutingModule } from './settings.routes';
 import { SettingsComponent } from './settings.component';
-
 import { FilterFormModule } from './filter-form/filter-form.module';
 import { FiltersListModule } from './filters-list/filters-list.module';
-import { SyncVisualizationModule } from './sync-visualization/sync-visualization.module';
-
 import { MatTabsModule } from '@angular/material/tabs';
-
 import { config } from '../app.config';
 import { SettingsTabsModule } from './settings-tabs/settings-tabs.module';
 
@@ -27,7 +20,6 @@ import { SettingsTabsModule } from './settings-tabs/settings-tabs.module';
         MatTabsModule,
         FiltersListModule,
         FilterFormModule,
-        SyncVisualizationModule,
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,
