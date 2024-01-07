@@ -138,6 +138,10 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
         await this.validatePreviousFilter(addonData);
     }
 
+    /**
+     * Upsert basic (default) filter objects.
+     * @returns A list of basic filter objects that should be used to create default filter rules.
+     */
     async upsertBasicFilterObjects(): Promise<BasicFilterRuleData[]> {
         try {
             const allFilterObjects = await this.get();
@@ -172,7 +176,7 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
                 Key: accountUsersResult.Key
             };
 
-            const profileFilterObject = {
+            const profileFilterObject: FilterObject = {
                 Name: 'Current User Profile',
                 Resource: 'users',
                 Field: 'Profile',
@@ -188,6 +192,53 @@ export class FilterObjectService extends BasicTableService<FilterObject>{
                 Key: profileResult.Key
             };
 
+            const currentEmployee: FilterObject = {
+                Name: 'Current employee',
+                Resource: 'employees',
+                Field: 'Key'
+            };
+
+            const currentUserRole: FilterObject = {
+                Name: 'Current User Role',
+                Resource: 'employees',
+                Field: 'Role',
+                PreviousFilter: currentEmployee.Key,
+                PreviousField: 'Key'
+            };
+            await this.getSystemFilterObjectKey(allFilterObjects, currentUserRole);
+            await this.upsert(currentUserRole, true);
+
+            const rolesUnderMyRole: FilterObject = {
+                Name: 'Roles under my role',
+                Resource: 'roles_roles',
+                Field: 'ParentRole',
+                PreviousFilter: currentUserRole.Key,
+                PreviousField: 'Role'
+            };
+            await this.getSystemFilterObjectKey(allFilterObjects, rolesUnderMyRole);
+            await this.upsert(rolesUnderMyRole, true);
+
+            const usersUnderMyHierarchy: FilterObject = {
+                Name: 'Users under my hierarchy',
+                Resource: 'users',
+                Field: 'Key',
+                PreviousFilter: rolesUnderMyRole.Key,
+                PreviousField: 'Role'
+            };
+            await this.getSystemFilterObjectKey(allFilterObjects, usersUnderMyHierarchy);
+            await this.upsert(usersUnderMyHierarchy, true);
+
+            const accountsAssignedToUsersUnderMyHierarchy: FilterObject = {
+                Name: 'Accounts assigned to users under my hierarchy',
+                Resource: 'account_users',
+                Field: 'Account',
+                PreviousFilter: usersUnderMyHierarchy.Key,
+                PreviousField: 'User'
+            };
+            await this.getSystemFilterObjectKey(allFilterObjects, accountsAssignedToUsersUnderMyHierarchy);
+            await this.upsert(accountsAssignedToUsersUnderMyHierarchy, true);
+
+            // Returned filter objects will be used to create filter rules. 
             return [currentUserResourceAndKey, assignedAccountsResourceAndKey, profileResourceAndKey];
         }
         catch (error) {
